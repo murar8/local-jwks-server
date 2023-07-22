@@ -1,0 +1,70 @@
+package handler
+
+import (
+	"encoding/json"
+	"net/http"
+
+	"github.com/lestrrat-go/jwx/v2/jwk"
+	"github.com/lestrrat-go/jwx/v2/jwt"
+)
+
+type Handler interface {
+	HandleJWKS(w http.ResponseWriter, r *http.Request)
+	HandleSign(w http.ResponseWriter, r *http.Request)
+}
+
+type handler struct {
+	jwks jwk.Set
+}
+
+func New(jwks jwk.Set) Handler {
+	return &handler{jwks}
+}
+
+func (h *handler) HandleJWKS(w http.ResponseWriter, r *http.Request) {
+	w.Header().Set("Content-Type", "application/json")
+
+	err := json.NewEncoder(w).Encode(h.jwks)
+
+	if err != nil {
+		http.Error(w, err.Error(), http.StatusInternalServerError)
+		return
+	}
+}
+
+func (h *handler) HandleSign(w http.ResponseWriter, r *http.Request) {
+	var payload map[string]string
+	err := json.NewDecoder(r.Body).Decode(&payload)
+	if err != nil {
+		http.Error(w, err.Error(), http.StatusBadRequest)
+		return
+	}
+
+	t := jwt.New()
+	for k, v := range payload {
+		err := t.Set(k, v)
+		if err != nil {
+			http.Error(w, err.Error(), http.StatusBadRequest)
+			return
+		}
+	}
+
+	key, ok := h.jwks.Key(0)
+	if !ok {
+		http.Error(w, "key set is empty", http.StatusInternalServerError)
+		return
+	}
+
+	signed, err := jwt.Sign(t, jwt.WithKey(key.Algorithm(), key))
+
+	w.WriteHeader(http.StatusCreated)
+	w.Header().Set("Content-Type", "application/json")
+
+	err = json.NewEncoder(w).Encode(
+		map[string]string{"jwt": string(signed)},
+	)
+	if err != nil {
+		http.Error(w, err.Error(), http.StatusInternalServerError)
+		return
+	}
+}
