@@ -52,11 +52,24 @@ func GenerateKey(cfg *config.JWK) (jwk.Key, error) {
 		return nil, err
 	}
 
-	key.Set(jwk.KeyUsageKey, cfg.Use)
-	key.Set(jwk.AlgorithmKey, cfg.Alg)
-	key.Set(jwk.KeyOpsKey, cfg.KeyOps)
+	fields := []struct {
+		key string
+		val interface{}
+	}{
+		{jwk.KeyUsageKey, cfg.Use},
+		{jwk.AlgorithmKey, cfg.Alg},
+		{jwk.KeyOpsKey, cfg.KeyOps},
+	}
 
-	jwk.AssignKeyID(key)
+	for _, f := range fields {
+		if err = key.Set(f.key, f.val); err != nil {
+			return nil, err
+		}
+	}
+
+	if err = jwk.AssignKeyID(key); err != nil {
+		return nil, err
+	}
 
 	return key, nil
 }
@@ -74,7 +87,9 @@ func GenerateKeySet(cfg *config.JWK, count int) (jwk.Set, error) {
 		if err != nil {
 			return nil, err
 		}
-		set.AddKey(pub)
+		if err = set.AddKey(pub); err != nil {
+			return nil, err
+		}
 	}
 
 	return set, nil

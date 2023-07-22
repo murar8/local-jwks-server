@@ -31,7 +31,10 @@ func (h *handler) HandleJWKS(w http.ResponseWriter, r *http.Request) {
 	}
 
 	set := jwk.NewSet()
-	set.AddKey(pk)
+	if err = set.AddKey(pk); err != nil {
+		http.Error(w, err.Error(), http.StatusInternalServerError)
+		return
+	}
 
 	if err = json.NewEncoder(w).Encode(set); err != nil {
 		http.Error(w, err.Error(), http.StatusInternalServerError)
@@ -57,6 +60,10 @@ func (h *handler) HandleSign(w http.ResponseWriter, r *http.Request) {
 	}
 
 	signed, err := jwt.Sign(t, jwt.WithKey(h.key.Algorithm(), h.key))
+	if err != nil {
+		http.Error(w, err.Error(), http.StatusInternalServerError)
+		return
+	}
 
 	w.Header().Set("Content-Type", "application/json")
 	w.WriteHeader(http.StatusCreated)

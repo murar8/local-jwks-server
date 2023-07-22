@@ -38,5 +38,8 @@ func main() {
 
 	addr := net.TCPAddr{IP: cfg.Server.Addr, Port: cfg.Server.Port}
 	log.Printf("listening on %s", addr.String())
-	http.ListenAndServe(addr.String(), r)
+
+	if err = http.ListenAndServe(addr.String(), r); err != nil {
+		log.Fatalf("failed to start server: %s", err)
+	}
 }
