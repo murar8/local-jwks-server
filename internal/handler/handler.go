@@ -58,13 +58,11 @@ func (h *handler) HandleSign(w http.ResponseWriter, r *http.Request) {
 
 	signed, err := jwt.Sign(t, jwt.WithKey(h.key.Algorithm(), h.key))
 
-	w.WriteHeader(http.StatusCreated)
 	w.Header().Set("Content-Type", "application/json")
+	w.WriteHeader(http.StatusCreated)
 
-	err = json.NewEncoder(w).Encode(
-		map[string]string{"jwt": string(signed)},
-	)
-	if err != nil {
+	body := map[string]string{"jwt": string(signed)}
+	if err = json.NewEncoder(w).Encode(body); err != nil {
 		http.Error(w, err.Error(), http.StatusInternalServerError)
 		return
 	}

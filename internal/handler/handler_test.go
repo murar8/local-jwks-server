@@ -46,6 +46,7 @@ func TestHandleJWKS(t *testing.T) {
 
 		assert.NoError(t, err)
 		assert.Equal(t, res.StatusCode, http.StatusOK)
+		assert.Equal(t, "application/json", res.Header.Get("Content-Type"))
 		assert.Equal(t, "RSA", data["keys"][0]["kty"])
 		assert.Equal(t, "sig", data["keys"][0]["use"])
 		assert.Equal(t, "RS256", data["keys"][0]["alg"])
@@ -84,6 +85,8 @@ func TestHandleSign(t *testing.T) {
 		parsed, err := jwt.Parse([]byte(data["jwt"]), jwt.WithKey(key.Algorithm(), pk))
 
 		assert.NoError(t, err)
+		assert.Equal(t, res.StatusCode, http.StatusCreated)
+		assert.Equal(t, "application/json", res.Header.Get("Content-Type"))
 		assert.Equal(t, "me", parsed.Subject())
 		assert.Equal(t, "value", parsed.PrivateClaims()["custom"])
 	})
