@@ -1,0 +1,102 @@
+name: CI
+
+on:
+    push:
+        branches:
+            - main
+        tags:
+            - v[0-9]+.[0-9]+.[0-9]+
+
+    pull_request:
+        branches:
+            - main
+
+jobs:
+    lint:
+        runs-on: ubuntu-latest
+
+        steps:
+            - name: Checkout
+              uses: actions/checkout@v3
+              with:
+                  fetch-depth: 0
+
+            - name: Setup Go
+              uses: actions/setup-go@v4
+              with:
+                  go-version: "1.20"
+
+            - name: Lint
+              uses: golangci/golangci-lint-action@v3
+
+    test:
+        runs-on: ubuntu-latest
+
+        steps:
+            - name: Checkout
+              uses: actions/checkout@v3
+              with:
+                  fetch-depth: 0
+
+            - name: Set up Docker Buildx
+              uses: docker/setup-buildx-action@v2
+
+            - name: Build images
+              uses: docker/bake-action@v3
+              with:
+                  load: true
+                  files: docker-compose.test.yml
+                  set: |
+                      app.cache-from=type=gha,scope=$GITHUB_REF_NAME-app
+                      app.cache-to=type=gha,scope=$GITHUB_REF_NAME-app,mode=max
+                      test.cache-from=type=gha,scope=$GITHUB_REF_NAME-test
+                      test.cache-to=type=gha,scope=$GITHUB_REF_NAME-test,mode=max
+
+            - name: Test
+              run: docker compose -f docker-compose.test.yml run --rm test
+
+    push:
+        runs-on: ubuntu-latest
+
+        needs:
+            - lint
+            - test
+
+        permissions:
+            packages: write
+
+        if: github.event_name != 'pull_request'
+
+        steps:
+            - name: Checkout
+              uses: actions/checkout@v3
+              with:
+                  fetch-depth: 0
+
+            - name: Set up Docker Buildx
+              uses: docker/setup-buildx-action@v2
+
+            - name: Docker Metadata
+              id: docker-metadata
+              uses: docker/metadata-action@v4
+              with:
+                  images: ghcr.io/murar8/local-jwks-server
+                  tags: |
+                      type=ref,event=branch
+                      type=sha,prefix=
+
+            - name: Log in to GitHub Container Registry
+              uses: docker/login-action@65b78e6e13532edd9afa3aa52ac7964289d1a9c1
+              with:
+                  registry: ghcr.io
+                  username: ${{ github.actor }}
+                  password: ${{ secrets.GITHUB_TOKEN }}
+
+            - name: Build and Push
+              uses: docker/build-push-action@v4
+              with:
+                  push: true
+                  tags: ${{ steps.docker-metadata.outputs.tags }}
+                  labels: ${{ steps.docker-metadata.outputs.labels }}
+                  cache-from: type=gha,scope=$GITHUB_REF_NAME-app
+                  cache-to: type=gha,scope=$GITHUB_REF_NAME-app,mode=max

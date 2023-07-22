@@ -1,10 +1,12 @@
 services:
     app:
+        image: app:latest
         build:
             context: .
             target: app
 
     test:
+        image: test:latest
         build:
             context: .
             target: test
