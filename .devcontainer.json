@@ -17,9 +17,12 @@
                 ]
             },
             "extensions": [
-                "foxundermoon.shell-format",
+                "davidanson.vscode-markdownlint",
                 "editorconfig.editorconfig",
-                "davidanson.vscode-markdownlint"
+                "foxundermoon.shell-format",
+                "github.vscode-github-actions",
+                "redhat.vscode-yaml",
+                "tamasfe.even-better-toml"
             ]
         }
     }
