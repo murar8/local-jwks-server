@@ -55,15 +55,8 @@ func TestHandleJWKS(t *testing.T) {
 
 func TestHandleSign(t *testing.T) {
 	t.Run(("generates a signed jwt with the provided payload"), func(t *testing.T) {
-		payload := map[string]string{
-			"sub":    "me",
-			"custom": "value",
-		}
-
-		body, err := json.Marshal(payload)
-		if err != nil {
-			panic(err)
-		}
+		payload := map[string]string{"sub": "me", "custom": "value"}
+		body, _ := json.Marshal(payload)
 
 		req := httptest.NewRequest(http.MethodPost, "/jwt/sign", bytes.NewReader(body))
 		w := httptest.NewRecorder()
@@ -73,7 +66,8 @@ func TestHandleSign(t *testing.T) {
 		res := w.Result()
 		defer res.Body.Close()
 		var data map[string]string
-		err = json.NewDecoder(res.Body).Decode(&data)
+		err := json.NewDecoder(res.Body).Decode(&data)
+
 		assert.NoError(t, err)
 		assert.Equal(t, http.StatusCreated, res.StatusCode)
 
@@ -89,5 +83,24 @@ func TestHandleSign(t *testing.T) {
 		assert.Equal(t, "application/json", res.Header.Get("Content-Type"))
 		assert.Equal(t, "me", parsed.Subject())
 		assert.Equal(t, "value", parsed.PrivateClaims()["custom"])
+	})
+
+	t.Run(("returns bad request status if the body is invalid"), func(t *testing.T) {
+		payload := map[string]map[string]string{"wrong": {"key": "value"}}
+
+		body, err := json.Marshal(payload)
+		if err != nil {
+			panic(err)
+		}
+
+		req := httptest.NewRequest(http.MethodPost, "/jwt/sign", bytes.NewReader(body))
+		w := httptest.NewRecorder()
+
+		h.HandleSign(w, req)
+
+		res := w.Result()
+		defer res.Body.Close()
+
+		assert.Equal(t, res.StatusCode, http.StatusBadRequest)
 	})
 }
