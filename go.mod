@@ -5,6 +5,7 @@ go 1.20
 require (
 	github.com/caarlos0/env/v9 v9.0.0
 	github.com/cosmtrek/air v1.44.0
+	github.com/go-chi/chi/v5 v5.0.10
 	github.com/lestrrat-go/jwx/v2 v2.0.11
 	github.com/stretchr/testify v1.8.4
 )
