@@ -70,7 +70,11 @@ func GenerateKeySet(cfg *config.JWK, count int) (jwk.Set, error) {
 		if err != nil {
 			return nil, err
 		}
-		set.AddKey(key)
+		pub, err := key.PublicKey()
+		if err != nil {
+			return nil, err
+		}
+		set.AddKey(pub)
 	}
 
 	return set, nil

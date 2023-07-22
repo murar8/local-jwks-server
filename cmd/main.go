@@ -19,7 +19,7 @@ func main() {
 		log.Fatalf("failed to initialize config: %s", err)
 	}
 
-	jwks, err := jwkutil.GenerateKeySet(&cfg.JWK, 1)
+	jwk, err := jwkutil.GenerateKey(&cfg.JWK)
 	if err != nil {
 		log.Fatalf("failed to generate key: %s", err)
 	}
@@ -32,7 +32,7 @@ func main() {
 	r.Use(middleware.Logger)
 	r.Use(middleware.Recoverer)
 
-	h := handler.New(jwks)
+	h := handler.New(jwk)
 	r.Get("/.well-known/jwks.json", h.HandleJWKS)
 	r.Post("/jwt/sign", h.HandleSign)
 

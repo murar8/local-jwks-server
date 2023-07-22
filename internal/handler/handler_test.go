@@ -18,18 +18,18 @@ import (
 )
 
 var h handler.Handler
-var jwks jwk.Set
+var key jwk.Key
 
 func init() {
 	cfg := config.JWK{Alg: jwa.RS256, Use: jwk.ForSignature}
 
 	var err error
-	jwks, err = jwkutil.GenerateKeySet(&cfg, 1)
+	key, err = jwkutil.GenerateKey(&cfg)
 	if err != nil {
 		panic(err)
 	}
 
-	h = handler.New(jwks)
+	h = handler.New(key)
 }
 
 func TestHandleJWKS(t *testing.T) {
@@ -47,13 +47,16 @@ func TestHandleJWKS(t *testing.T) {
 		assert.NoError(t, err)
 		assert.Equal(t, res.StatusCode, http.StatusOK)
 		assert.Equal(t, "RSA", data["keys"][0]["kty"])
+		assert.Equal(t, "sig", data["keys"][0]["use"])
+		assert.Equal(t, "RS256", data["keys"][0]["alg"])
 	})
 }
 
 func TestHandleSign(t *testing.T) {
 	t.Run(("generates a signed jwt with the provided payload"), func(t *testing.T) {
 		payload := map[string]string{
-			"sub": "me",
+			"sub":    "me",
+			"custom": "value",
 		}
 
 		body, err := json.Marshal(payload)
@@ -73,11 +76,6 @@ func TestHandleSign(t *testing.T) {
 		assert.NoError(t, err)
 		assert.Equal(t, http.StatusCreated, res.StatusCode)
 
-		key, ok := jwks.Key(0)
-		if !ok {
-			panic("key set is empty")
-		}
-
 		pk, err := key.PublicKey()
 		if err != nil {
 			panic(err)
@@ -87,5 +85,6 @@ func TestHandleSign(t *testing.T) {
 
 		assert.NoError(t, err)
 		assert.Equal(t, "me", parsed.Subject())
+		assert.Equal(t, "value", parsed.PrivateClaims()["custom"])
 	})
 }

@@ -14,19 +14,26 @@ type Handler interface {
 }
 
 type handler struct {
-	jwks jwk.Set
+	key jwk.Key
 }
 
-func New(jwks jwk.Set) Handler {
-	return &handler{jwks}
+func New(key jwk.Key) Handler {
+	return &handler{key}
 }
 
 func (h *handler) HandleJWKS(w http.ResponseWriter, r *http.Request) {
 	w.Header().Set("Content-Type", "application/json")
 
-	err := json.NewEncoder(w).Encode(h.jwks)
-
+	pk, err := h.key.PublicKey()
 	if err != nil {
+		http.Error(w, err.Error(), http.StatusInternalServerError)
+		return
+	}
+
+	set := jwk.NewSet()
+	set.AddKey(pk)
+
+	if err = json.NewEncoder(w).Encode(set); err != nil {
 		http.Error(w, err.Error(), http.StatusInternalServerError)
 		return
 	}
@@ -49,13 +56,7 @@ func (h *handler) HandleSign(w http.ResponseWriter, r *http.Request) {
 		}
 	}
 
-	key, ok := h.jwks.Key(0)
-	if !ok {
-		http.Error(w, "key set is empty", http.StatusInternalServerError)
-		return
-	}
-
-	signed, err := jwt.Sign(t, jwt.WithKey(key.Algorithm(), key))
+	signed, err := jwt.Sign(t, jwt.WithKey(h.key.Algorithm(), h.key))
 
 	w.WriteHeader(http.StatusCreated)
 	w.Header().Set("Content-Type", "application/json")
