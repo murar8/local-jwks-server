@@ -2,14 +2,15 @@
     "name": "local-jwks-server",
     "image": "mcr.microsoft.com/devcontainers/go:1",
     "features": {
-        "ghcr.io/guiyomh/features/golangci-lint:0": {}
+        "ghcr.io/guiyomh/features/golangci-lint:0": {},
+        "ghcr.io/devcontainers/features/docker-outside-of-docker": {}
     },
     "customizations": {
         "vscode": {
             "settings": {
                 // Make gopls work with build tags.
                 // See https://github.com/golang/go/issues/29202#issuecomment-881953121
-                "go.buildTags": "tools",
+                "go.buildTags": "e2e,tools",
                 "go.lintTool": "golangci-lint",
                 "go.lintFlags": [
                     "--fast"

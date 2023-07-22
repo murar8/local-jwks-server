@@ -1,0 +1,15 @@
+services:
+    app:
+        build:
+            context: .
+            target: app
+
+    test:
+        build:
+            context: .
+            target: test
+        environment:
+            API_URL: http://app:8080
+        depends_on:
+            app:
+                condition: service_healthy
