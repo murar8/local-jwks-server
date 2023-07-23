@@ -71,7 +71,7 @@ jobs:
               with:
                   token: ${{ secrets.CODECOV_TOKEN }}
                   files: ./coverage/coverage.out
-                  fail_ci_if_error: true # optional (default = false)
+                  fail_ci_if_error: true
 
     release:
         runs-on: ubuntu-latest
