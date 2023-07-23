@@ -5,13 +5,21 @@ services:
             context: .
             target: app
 
-    test:
-        image: test:latest
+    test-e2e:
+        image: test-e2e:latest
         build:
             context: .
-            target: test
+            target: test-e2e
         environment:
             API_URL: http://app:8080
         depends_on:
             app:
                 condition: service_healthy
+
+    test-unit:
+        image: test-unit:latest
+        volumes:
+            - ./coverage:/app/coverage
+        build:
+            context: .
+            target: test-unit

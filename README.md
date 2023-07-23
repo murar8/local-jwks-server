@@ -98,18 +98,14 @@ go run github.com/cosmtrek/air
 
 ### Running the unit test suite
 
-The unit test suite does not require any external dependencies and can be run without docker.
-
 ```bash
-go test ./...
+docker compose -f docker-compose.test.yml run --rm --build test-unit
 ```
 
 ### Running the e2e test suite
 
-The e2e test suite requires docker and docker compose to be installed.
-
 ```bash
-docker compose run --rm --build test
+docker compose -f docker-compose.test.yml run --rm --build test-e2e
 ```
 
 ## License

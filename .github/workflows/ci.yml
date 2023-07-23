@@ -56,11 +56,22 @@ jobs:
                   set: |
                       app.cache-from=type=gha,scope=$GITHUB_REF_NAME-app
                       app.cache-to=type=gha,scope=$GITHUB_REF_NAME-app,mode=max
-                      test.cache-from=type=gha,scope=$GITHUB_REF_NAME-test
-                      test.cache-to=type=gha,scope=$GITHUB_REF_NAME-test,mode=max
+                      test-e2e.cache-from=type=gha,scope=$GITHUB_REF_NAME-test-e2e
+                      test-e2e.cache-to=type=gha,scope=$GITHUB_REF_NAME-test-e2e,mode=max
+                      test-unit.cache-from=type=gha,scope=$GITHUB_REF_NAME-test-unit
+                      test-unit.cache-to=type=gha,scope=$GITHUB_REF_NAME-test-unit,mode=max
 
             - name: Test
-              run: docker compose -f docker-compose.test.yml run --rm test
+              run: |
+                  docker compose -f docker-compose.test.yml run --rm test-unit
+                  docker compose -f docker-compose.test.yml run --rm test-e2e
+
+            - name: Upload coverage report
+              uses: codecov/codecov-action@v3
+              with:
+                  token: ${{ secrets.CODECOV_TOKEN }}
+                  files: ./coverage/coverage.out
+                  fail_ci_if_error: true # optional (default = false)
 
     release:
         runs-on: ubuntu-latest
