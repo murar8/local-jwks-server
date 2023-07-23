@@ -1,0 +1,3 @@
+ignore:
+    - "**/*_test.go"
+    - "tools/tools.go"
