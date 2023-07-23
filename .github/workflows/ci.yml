@@ -21,6 +21,11 @@ jobs:
               with:
                   fetch-depth: 0
 
+            - name: Prettier
+              uses: actionsx/prettier@v2
+              with:
+                  args: --check .
+
             - name: Setup Go
               uses: actions/setup-go@v4
               with:
