@@ -1,0 +1,20 @@
+name: Push
+
+on:
+    push:
+        branches:
+            - main
+        tags:
+            - v[0-9]+.[0-9]+.[0-9]+
+
+jobs:
+    lint:
+        uses: ./.github/workflows/lint.yml
+
+    test:
+        uses: ./.github/workflows/test.yml
+        secrets: inherit
+
+    release:
+        uses: ./.github/workflows/release.yml
+        secrets: inherit
