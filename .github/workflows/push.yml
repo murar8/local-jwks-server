@@ -18,5 +18,8 @@ jobs:
     release:
         uses: ./.github/workflows/release.yml
         secrets: inherit
+        needs:
+            - lint
+            - test
         permissions:
             packages: write
