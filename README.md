@@ -1,7 +1,6 @@
 # local-jwks-server
 
 [![CI](https://github.com/murar8/local-jwks-server/actions/workflows/ci.yml/badge.svg)](https://github.com/murar8/local-jwks-server/actions/workflows/ci.yml)
-
 [![codecov](https://codecov.io/gh/murar8/local-jwks-server/branch/main/graph/badge.svg?token=XOZ7PWGGLB)](https://codecov.io/gh/murar8/local-jwks-server)
 
 This project provides a local server that can be used to serve a JSON Web Key Set endpoint for testing purposes. It can be used to test applications that rely on a JWKS endpoint for authentication, for example for mocking the auth0 signature verification.
