@@ -9,10 +9,20 @@ COPY cmd/ ./cmd
 COPY internal/ ./internal
 
 
-FROM base AS test
+FROM base AS test-unit
+
+RUN mkdir ./coverage
+
+VOLUME ./coverage
+
+CMD go test -v -race -covermode=atomic -coverprofile=./coverage/coverage.out ./...
+
+
+FROM base AS test-e2e
 
 COPY e2e ./e2e
-CMD go test -v --tags e2e ./...
+
+CMD go test -v --tags e2e ./e2e/...
 
 
 FROM base AS build
