@@ -19,10 +19,12 @@ import (
 
 var signPath string
 var jwksPath string
+var healthPath string
 
 func init() {
 	signPath, _ = url.JoinPath(os.Getenv("API_URL"), "/jwt/sign")
 	jwksPath, _ = url.JoinPath(os.Getenv("API_URL"), "/.well-known/jwks.json")
+	healthPath, _ = url.JoinPath(os.Getenv("API_URL"), "/health")
 }
 
 func TestHandlers(t *testing.T) {
@@ -62,5 +64,14 @@ func TestHandlers(t *testing.T) {
 
 		assert.NoError(t, err)
 		assert.NotNil(t, parsed)
+	})
+}
+
+func TestHealth(t *testing.T) {
+	t.Run("the server exposes a health endpoint", func(t *testing.T) {
+		res, err := http.Get(healthPath)
+
+		assert.NoError(t, err)
+		assert.Equal(t, http.StatusOK, res.StatusCode)
 	})
 }
