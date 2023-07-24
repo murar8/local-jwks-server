@@ -4,12 +4,18 @@ services:
         build:
             context: .
             target: app
+            x-bake:
+                cache-from: type=gha,scope=$GITHUB_REF_NAME-app
+                cache-to: type=gha,scope=$GITHUB_REF_NAME-app,mode=max
 
     test-e2e:
         image: test-e2e:latest
         build:
             context: .
             target: test-e2e
+            x-bake:
+                cache-from: type=gha,scope=$GITHUB_REF_NAME-test-e2e
+                cache-to: type=gha,scope=$GITHUB_REF_NAME-test-e2e,mode=max
         environment:
             API_URL: http://app:8080
         depends_on:
@@ -23,3 +29,6 @@ services:
         build:
             context: .
             target: test-unit
+            x-bake:
+                cache-from: type=gha,scope=$GITHUB_REF_NAME-test-unit
+                cache-to: type=gha,scope=$GITHUB_REF_NAME-test-unit,mode=max
