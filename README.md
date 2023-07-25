@@ -19,6 +19,9 @@ Docker compose can also be used:
 services:
     local-jwks-server:
         image: ghcr.io/murar8/local-jwks-server:latest
+        ports:
+            - 8080:8080
+        # Healthcheck is configured by default.
 
     my-app:
         build: .
@@ -29,7 +32,7 @@ services:
                 condition: service_healthy
 ```
 
-The server will generate a random key based on the provided configuration.
+The server will generate a random key upon startup based on the provided configuration.
 
 ## Usage
 
@@ -79,13 +82,13 @@ curl -X POST -H "Content-Type: application/json" -d '{ "sub": "lnzmrr@gmail.com"
 
 All configuration is managed via environment variables:
 
-| Name        | Description                               | Default |
-| ----------- | ----------------------------------------- | ------- |
-| JWK_USE     | RFC7517 Public Key Use.                   | sig     |
-| JWK_ALG     | RFC7518 JWS Algorithm.                    | RS256   |
-| JWK_KEY_OPS | RFC7517 Key Operations (comma separated). | -       |
-| SERVER_ADDR | Server listening address.                 | 0.0.0.0 |
-| SERVER_PORT | Server listening port.                    | 8080    |
+| Name        | Description                              | Default |
+| ----------- | ---------------------------------------- | ------- |
+| JWK_USE     | RFC7517 Public Key Use.                  | sig     |
+| JWK_ALG     | RFC7518 JWS Algorithm.                   | RS256   |
+| JWK_KEY_OPS | RFC7517 Key Operations, comma separated. | -       |
+| SERVER_ADDR | Server listening address.                | 0.0.0.0 |
+| SERVER_PORT | Server listening port.                   | 8080    |
 
 ## Contributing
 
