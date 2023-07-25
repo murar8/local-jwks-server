@@ -56,7 +56,7 @@ func GenerateKey(cfg *config.JWK) (jwk.Key, error) {
 		key string
 		val interface{}
 	}{
-		{jwk.KeyUsageKey, cfg.Use},
+		{jwk.KeyUsageKey, "sig"},
 		{jwk.AlgorithmKey, cfg.Alg},
 		{jwk.KeyOpsKey, cfg.KeyOps},
 	}

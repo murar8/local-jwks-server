@@ -18,7 +18,6 @@ func TestNew(t *testing.T) {
 		assert.Equal(t, net.IPv4(0, 0, 0, 0), cfg.Server.Addr)
 		assert.Equal(t, 8080, cfg.Server.Port)
 		assert.Equal(t, jwa.RS256, cfg.JWK.Alg)
-		assert.Equal(t, jwk.ForSignature, cfg.JWK.Use)
 		assert.Empty(t, cfg.JWK.KeyOps)
 	})
 
@@ -26,7 +25,6 @@ func TestNew(t *testing.T) {
 		t.Setenv("SERVER_ADDR", "127.0.0.1")
 		t.Setenv("SERVER_PORT", "3547")
 		t.Setenv("JWK_ALG", "RS512")
-		t.Setenv("JWK_USE", "enc")
 		t.Setenv("JWK_KEY_OPS", "sign,verify")
 
 		cfg, err := config.New()
@@ -34,7 +32,6 @@ func TestNew(t *testing.T) {
 		assert.Equal(t, net.IPv4(127, 0, 0, 1), cfg.Server.Addr)
 		assert.Equal(t, 3547, cfg.Server.Port)
 		assert.Equal(t, jwa.RS512, cfg.JWK.Alg)
-		assert.Equal(t, jwk.ForEncryption, cfg.JWK.Use)
 		assert.Equal(t, jwk.KeyOperationList{"sign", "verify"}, cfg.JWK.KeyOps)
 	})
 }

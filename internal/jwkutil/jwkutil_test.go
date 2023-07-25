@@ -61,7 +61,6 @@ func TestGenerateRawKey(t *testing.T) {
 func TestGenerateKey(t *testing.T) {
 	t.Run("generates a JWK key using the provided configuration", func(t *testing.T) {
 		key, err := jwkutil.GenerateKey(&config.JWK{
-			Use:    jwk.ForSignature,
 			Alg:    jwa.RS256,
 			KeyOps: jwk.KeyOperationList{"sign", "verify"},
 		})
@@ -77,7 +76,6 @@ func TestGenerateKey(t *testing.T) {
 func TestGenerateKeySet(t *testing.T) {
 	t.Run("generates a JWK set using the provided configuration", func(t *testing.T) {
 		set, err := jwkutil.GenerateKeySet(&config.JWK{
-			Use:    jwk.ForSignature,
 			Alg:    jwa.RS256,
 			KeyOps: jwk.KeyOperationList{"sign", "verify"},
 		}, 4)

@@ -10,7 +10,6 @@ import (
 )
 
 type JWK struct {
-	Use    jwk.KeyUsageType       `env:"JWK_USE,notEmpty" envDefault:"sig"`
 	Alg    jwa.SignatureAlgorithm `env:"JWK_ALG,notEmpty" envDefault:"RS256"`
 	KeyOps jwk.KeyOperationList   `env:"JWK_KEY_OPS"`
 }

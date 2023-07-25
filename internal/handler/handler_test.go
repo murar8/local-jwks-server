@@ -21,7 +21,7 @@ var h handler.Handler
 var key jwk.Key
 
 func init() {
-	cfg := config.JWK{Alg: jwa.RS256, Use: jwk.ForSignature}
+	cfg := config.JWK{Alg: jwa.RS256}
 
 	var err error
 	key, err = jwkutil.GenerateKey(&cfg)
