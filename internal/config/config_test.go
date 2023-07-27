@@ -34,4 +34,11 @@ func TestNew(t *testing.T) {
 		assert.Equal(t, jwa.RS512, cfg.JWK.Alg)
 		assert.Equal(t, jwk.KeyOperationList{"sign", "verify"}, cfg.JWK.KeyOps)
 	})
+
+	t.Run("returns an error if environment variables are invalid", func(t *testing.T) {
+		t.Setenv("SERVER_PORT", "invalid")
+		cfg, err := config.New()
+		assert.Nil(t, cfg)
+		assert.Error(t, err)
+	})
 }
