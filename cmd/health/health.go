@@ -23,14 +23,13 @@ func main() {
 	url := fmt.Sprintf("http://%s/health", host)
 
 	ctx, cancel := context.WithTimeout(context.Background(), cfg.Server.HTTPReqTimeout)
-	defer cancel()
 
 	req, _ := http.NewRequestWithContext(ctx, http.MethodGet, url, nil)
 	res, err := http.DefaultClient.Do(req)
 	res.Body.Close()
+	cancel()
 
 	if err != nil || res.StatusCode != http.StatusOK {
-		cancel()
 		log.Fatalf("health check failed: %v", err)
 	}
 }
