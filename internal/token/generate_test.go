@@ -30,7 +30,7 @@ func TestGenerateRawKey(t *testing.T) {
 		t.Run(fmt.Sprintf("generates a %s key", alg), func(t *testing.T) {
 			t.Parallel()
 
-			key, err := token.GenerateRawKey(alg)
+			key, err := token.GenerateRawKey(alg, 2048)
 			assert.NoError(t, err)
 			assert.IsType(t, &rsa.PrivateKey{}, key)
 		})
@@ -52,7 +52,7 @@ func TestGenerateRawKey(t *testing.T) {
 		t.Run(fmt.Sprintf("generates a %s key", alg), func(t *testing.T) {
 			t.Parallel()
 
-			key, err := token.GenerateRawKey(alg)
+			key, err := token.GenerateRawKey(alg, 2048)
 			assert.NoError(t, err)
 			assert.IsType(t, &ecdsa.PrivateKey{}, key)
 			assert.Equal(t, curve, key.(*ecdsa.PrivateKey).Curve)
@@ -62,7 +62,7 @@ func TestGenerateRawKey(t *testing.T) {
 	t.Run("returns an error for unsupported algorithms", func(t *testing.T) {
 		t.Parallel()
 
-		key, err := token.GenerateRawKey(jwa.HS256)
+		key, err := token.GenerateRawKey(jwa.HS256, 2048)
 		assert.Error(t, err)
 		assert.Nil(t, key)
 	})

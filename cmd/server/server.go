@@ -4,7 +4,6 @@ import (
 	"log"
 	"net"
 	"net/http"
-	"time"
 
 	"github.com/go-chi/chi/v5"
 	"github.com/go-chi/chi/v5/middleware"
@@ -14,15 +13,13 @@ import (
 	"github.com/murar8/local-jwks-server/internal/token"
 )
 
-const HTTPRequestTimeoutSecs = 30
-
 func main() {
 	cfg, err := config.New()
 	if err != nil {
 		log.Fatalf("failed to initialize config: %s", err)
 	}
 
-	raw, err := token.GenerateRawKey(cfg.JWK.Alg)
+	raw, err := token.GenerateRawKey(cfg.JWK.Alg, cfg.JWK.RsaKeySize)
 	if err != nil {
 		log.Fatalf("failed to generate key: %s", err)
 	}
@@ -60,7 +57,7 @@ func main() {
 	server := &http.Server{
 		Addr:              addr.String(),
 		Handler:           r,
-		ReadHeaderTimeout: HTTPRequestTimeoutSecs * time.Second,
+		ReadHeaderTimeout: cfg.Server.HTTPReqTimeout,
 	}
 
 	if err = server.ListenAndServe(); err != nil {

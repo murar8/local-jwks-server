@@ -3,6 +3,7 @@ package config
 import (
 	"fmt"
 	"net"
+	"time"
 
 	"github.com/caarlos0/env/v9"
 	"github.com/lestrrat-go/jwx/v2/jwa"
@@ -10,13 +11,15 @@ import (
 )
 
 type JWK struct {
-	Alg    jwa.SignatureAlgorithm `env:"JWK_ALG,notEmpty" envDefault:"RS256"`
-	KeyOps jwk.KeyOperationList   `env:"JWK_KEY_OPS"`
+	Alg        jwa.SignatureAlgorithm `env:"JWK_ALG,notEmpty" envDefault:"RS256"`
+	KeyOps     jwk.KeyOperationList   `env:"JWK_KEY_OPS"`
+	RsaKeySize int                    `env:"JWK_RSA_KEY_SIZE" envDefault:"2048"`
 }
 
 type Server struct {
-	Addr net.IP `env:"SERVER_ADDR,notEmpty" envDefault:"0.0.0.0"`
-	Port int    `env:"SERVER_PORT,notEmpty" envDefault:"8080"`
+	Addr           net.IP        `env:"SERVER_ADDR,notEmpty"         envDefault:"0.0.0.0"`
+	Port           int           `env:"SERVER_PORT,notEmpty"         envDefault:"8080"`
+	HTTPReqTimeout time.Duration `env:"SERVER_HTTP_REQ_TIMEOUT" envDefault:"30s"`
 }
 
 type Config struct {
