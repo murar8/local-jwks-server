@@ -17,8 +17,8 @@ type JWK struct {
 }
 
 type Server struct {
-	Addr           net.IP        `env:"SERVER_ADDR,notEmpty"         envDefault:"0.0.0.0"`
-	Port           int           `env:"SERVER_PORT,notEmpty"         envDefault:"8080"`
+	Addr           net.IP        `env:"SERVER_ADDR,notEmpty"    envDefault:"0.0.0.0"`
+	Port           int           `env:"SERVER_PORT,notEmpty"    envDefault:"8080"`
 	HTTPReqTimeout time.Duration `env:"SERVER_HTTP_REQ_TIMEOUT" envDefault:"30s"`
 }
 
