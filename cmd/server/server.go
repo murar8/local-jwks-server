@@ -36,11 +36,11 @@ func main() {
 
 	r.NotFound(func(w http.ResponseWriter, r *http.Request) {
 		res := &handler.ErrorResponse{Error: "not found", StatusCode: http.StatusNotFound}
-		_ = render.Render(w, r, res)
+		render.Render(w, r, res)
 	})
 	r.MethodNotAllowed(func(w http.ResponseWriter, r *http.Request) {
 		res := &handler.ErrorResponse{Error: "method not allowed", StatusCode: http.StatusMethodNotAllowed}
-		_ = render.Render(w, r, res)
+		render.Render(w, r, res)
 	})
 
 	r.Use(middleware.AllowContentType("application/json"))
