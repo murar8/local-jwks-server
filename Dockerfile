@@ -41,6 +41,6 @@ COPY --from=build /app/tmp/health /usr/bin/health
 
 USER nonroot:nonroot
 
-HEALTHCHECK --interval=1s --timeout=10s --retries=10 CMD [ "/usr/bin/health" ]
+HEALTHCHECK --interval=5s --timeout=30s --retries=10 CMD [ "/usr/bin/health" ]
 
 ENTRYPOINT ["/usr/bin/local-jwks-server"]
