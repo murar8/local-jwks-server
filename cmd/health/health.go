@@ -4,6 +4,7 @@
 package main
 
 import (
+	"context"
 	"fmt"
 	"log"
 	"net"
@@ -20,10 +21,16 @@ func main() {
 
 	host := net.JoinHostPort(cfg.Server.Addr.String(), fmt.Sprint(cfg.Server.Port))
 	url := fmt.Sprintf("http://%s/health", host)
-	res, err := http.Get(url)
+
+	ctx, cancel := context.WithTimeout(context.Background(), cfg.Server.HTTPReqTimeout)
+	defer cancel()
+
+	req, _ := http.NewRequestWithContext(ctx, http.MethodGet, url, nil)
+	res, err := http.DefaultClient.Do(req)
 	res.Body.Close()
 
 	if err != nil || res.StatusCode != http.StatusOK {
+		cancel()
 		log.Fatalf("health check failed: %v", err)
 	}
 }
