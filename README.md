@@ -1,6 +1,6 @@
 # local-jwks-server
 
-[![Push](https://github.com/murar8/local-jwks-server/actions/workflows/push.yml/badge.svg)](https://github.com/murar8/local-jwks-server/actions/workflows/push.yml)
+[![Release](https://github.com/murar8/local-jwks-server/actions/workflows/release.yml/badge.svg)](https://github.com/murar8/local-jwks-server/actions/workflows/release.yml)
 [![codecov](https://codecov.io/gh/murar8/local-jwks-server/branch/main/graph/badge.svg?token=XOZ7PWGGLB)](https://codecov.io/gh/murar8/local-jwks-server)
 
 This project provides a local server that can be used to serve a JSON Web Key Set endpoint for testing purposes. It can be used to test applications that rely on a JWKS endpoint for authentication, for example for mocking the auth0 signature verification.
@@ -101,8 +101,16 @@ go run github.com/cosmtrek/air
 
 ### Running the unit test suite
 
+#### With docker:
+
 ```bash
 docker compose -f docker-compose.test.yml run --rm --build test-unit
+```
+
+#### Locally:
+
+```bash
+go test ./...
 ```
 
 ### Running the e2e test suite
