@@ -6,11 +6,13 @@ require (
 	github.com/caarlos0/env/v9 v9.0.0
 	github.com/cosmtrek/air v1.44.0
 	github.com/go-chi/chi/v5 v5.0.10
+	github.com/go-chi/render v1.0.3
 	github.com/lestrrat-go/jwx/v2 v2.0.11
 	github.com/stretchr/testify v1.8.4
 )
 
 require (
+	github.com/ajg/form v1.5.1 // indirect
 	github.com/bep/godartsass v0.16.0 // indirect
 	github.com/bep/golibsass v1.1.0 // indirect
 	github.com/cli/safeexec v1.0.0 // indirect

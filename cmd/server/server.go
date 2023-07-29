@@ -7,10 +7,11 @@ import (
 
 	"github.com/go-chi/chi/v5"
 	"github.com/go-chi/chi/v5/middleware"
+	"github.com/go-chi/render"
 
 	"github.com/murar8/local-jwks-server/internal/config"
 	"github.com/murar8/local-jwks-server/internal/handler"
-	"github.com/murar8/local-jwks-server/internal/jwkutil"
+	"github.com/murar8/local-jwks-server/internal/token"
 )
 
 func main() {
@@ -19,9 +20,14 @@ func main() {
 		log.Fatalf("failed to initialize config: %s", err)
 	}
 
-	jwk, err := jwkutil.GenerateKey(&cfg.JWK)
+	raw, err := token.GenerateRawKey(cfg.JWK.Alg)
 	if err != nil {
 		log.Fatalf("failed to generate key: %s", err)
+	}
+
+	tokenService, err := token.FromRawKey(raw, &cfg.JWK)
+	if err != nil {
+		log.Fatalf("failed to initialize token service: %s", err)
 	}
 
 	r := chi.NewRouter()
@@ -31,8 +37,9 @@ func main() {
 	r.Use(middleware.RequestID)
 	r.Use(middleware.Logger)
 	r.Use(middleware.Recoverer)
+	r.Use(render.SetContentType(render.ContentTypeJSON))
 
-	h := handler.New(jwk)
+	h := handler.New(tokenService)
 	r.Get("/.well-known/jwks.json", h.HandleJWKS)
 	r.Post("/jwt/sign", h.HandleSign)
 

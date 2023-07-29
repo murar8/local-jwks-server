@@ -4,8 +4,8 @@ import (
 	"encoding/json"
 	"net/http"
 
-	"github.com/lestrrat-go/jwx/v2/jwk"
-	"github.com/lestrrat-go/jwx/v2/jwt"
+	"github.com/go-chi/render"
+	"github.com/murar8/local-jwks-server/internal/token"
 )
 
 type Handler interface {
@@ -14,63 +14,36 @@ type Handler interface {
 }
 
 type handler struct {
-	key jwk.Key
+	tokenService token.Service
 }
 
-func New(key jwk.Key) Handler {
-	return &handler{key}
+func New(tokenService token.Service) Handler {
+	return &handler{tokenService}
 }
 
 func (h *handler) HandleJWKS(w http.ResponseWriter, r *http.Request) {
-	w.Header().Set("Content-Type", "application/json")
-
-	pk, err := h.key.PublicKey()
-	if err != nil {
-		http.Error(w, err.Error(), http.StatusInternalServerError)
-		return
-	}
-
-	set := jwk.NewSet()
-	if err = set.AddKey(pk); err != nil {
-		http.Error(w, err.Error(), http.StatusInternalServerError)
-		return
-	}
-
-	if err = json.NewEncoder(w).Encode(set); err != nil {
-		http.Error(w, err.Error(), http.StatusInternalServerError)
-		return
+	if set, err := h.tokenService.GetKeySet(); err != nil {
+		res := &ErrorResponse{Error: err.Error(), StatusCode: http.StatusInternalServerError}
+		render.Render(w, r, res)
+	} else {
+		render.JSON(w, r, set)
 	}
 }
 
 func (h *handler) HandleSign(w http.ResponseWriter, r *http.Request) {
-	var payload map[string]string
-	err := json.NewDecoder(r.Body).Decode(&payload)
+	var payload map[string]interface{}
+	if err := json.NewDecoder(r.Body).Decode(&payload); err != nil {
+		res := &ErrorResponse{Error: err.Error(), StatusCode: http.StatusUnprocessableEntity}
+		render.Render(w, r, res)
+		return
+	}
+
+	signed, err := h.tokenService.SignToken(payload)
 	if err != nil {
-		http.Error(w, err.Error(), http.StatusBadRequest)
+		res := &ErrorResponse{Error: err.Error(), StatusCode: http.StatusBadRequest}
+		render.Render(w, r, res)
 		return
 	}
 
-	t := jwt.New()
-	for k, v := range payload {
-		err := t.Set(k, v)
-		if err != nil {
-			http.Error(w, err.Error(), http.StatusBadRequest)
-			return
-		}
-	}
-
-	signed, err := jwt.Sign(t, jwt.WithKey(h.key.Algorithm(), h.key))
-	if err != nil {
-		http.Error(w, err.Error(), http.StatusInternalServerError)
-		return
-	}
-
-	w.Header().Set("Content-Type", "application/json")
-	w.WriteHeader(http.StatusCreated)
-
-	body := map[string]string{"jwt": string(signed)}
-	if err = json.NewEncoder(w).Encode(body); err != nil {
-		http.Error(w, err.Error(), http.StatusInternalServerError)
-		return
-	}
+	render.Render(w, r, &HandleSignResponse{Jwt: string(signed)})
 }
