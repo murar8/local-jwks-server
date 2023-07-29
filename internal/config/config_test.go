@@ -6,11 +6,11 @@ import (
 
 	"github.com/lestrrat-go/jwx/v2/jwa"
 	"github.com/lestrrat-go/jwx/v2/jwk"
-	"github.com/stretchr/testify/assert"
-
 	"github.com/murar8/local-jwks-server/internal/config"
+	"github.com/stretchr/testify/assert"
 )
 
+//nolint:paralleltest // Test is not parallelizable due to the use of environment variables.
 func TestNew(t *testing.T) {
 	t.Run("creates a new config using default values", func(t *testing.T) {
 		cfg, err := config.New()

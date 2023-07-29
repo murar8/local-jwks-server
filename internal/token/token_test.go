@@ -9,14 +9,17 @@ import (
 	"github.com/lestrrat-go/jwx/v2/jwa"
 	"github.com/lestrrat-go/jwx/v2/jwk"
 	"github.com/lestrrat-go/jwx/v2/jwt"
-	"github.com/stretchr/testify/assert"
-
 	"github.com/murar8/local-jwks-server/internal/config"
 	"github.com/murar8/local-jwks-server/internal/token"
+	"github.com/stretchr/testify/assert"
 )
 
 func TestFromRawKey(t *testing.T) {
+	t.Parallel()
+
 	t.Run("creates a new token service", func(t *testing.T) {
+		t.Parallel()
+
 		key, _ := rsa.GenerateKey(rand.Reader, 2048)
 		ts, err := token.FromRawKey(key, &config.JWK{Alg: "RS256"})
 
@@ -25,6 +28,8 @@ func TestFromRawKey(t *testing.T) {
 	})
 
 	t.Run("returns an error if the key is invalid", func(t *testing.T) {
+		t.Parallel()
+
 		ts, err := token.FromRawKey("invalid", &config.JWK{Alg: "RS256"})
 
 		assert.Nil(t, ts)
@@ -33,7 +38,11 @@ func TestFromRawKey(t *testing.T) {
 }
 
 func TestGetKey(t *testing.T) {
+	t.Parallel()
+
 	t.Run("returns a JWK key", func(t *testing.T) {
+		t.Parallel()
+
 		raw, _ := rsa.GenerateKey(rand.Reader, 2048)
 		cfg := &config.JWK{Alg: jwa.RS256, KeyOps: []jwk.KeyOperation{"sign", "verify"}}
 		ts, _ := token.FromRawKey(raw, cfg)
@@ -46,7 +55,11 @@ func TestGetKey(t *testing.T) {
 }
 
 func TestGetKeySet(t *testing.T) {
+	t.Parallel()
+
 	t.Run("returns a JWK key set", func(t *testing.T) {
+		t.Parallel()
+
 		raw, _ := rsa.GenerateKey(rand.Reader, 2048)
 		cfg := &config.JWK{Alg: jwa.RS256, KeyOps: []jwk.KeyOperation{"sign", "verify"}}
 		ts, _ := token.FromRawKey(raw, cfg)
@@ -75,7 +88,11 @@ func TestGetKeySet(t *testing.T) {
 }
 
 func TestSignToken(t *testing.T) {
+	t.Parallel()
+
 	t.Run("returns a signed JWT token", func(t *testing.T) {
+		t.Parallel()
+
 		raw, _ := rsa.GenerateKey(rand.Reader, 2048)
 		cfg := &config.JWK{Alg: jwa.RS256}
 		ts, _ := token.FromRawKey(raw, cfg)
@@ -89,6 +106,8 @@ func TestSignToken(t *testing.T) {
 	})
 
 	t.Run("returns an error if the payload is invalid", func(t *testing.T) {
+		t.Parallel()
+
 		raw, _ := rsa.GenerateKey(rand.Reader, 2048)
 		cfg := &config.JWK{Alg: jwa.RS256}
 		ts, _ := token.FromRawKey(raw, cfg)

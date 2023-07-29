@@ -4,15 +4,17 @@ import (
 	"log"
 	"net"
 	"net/http"
+	"time"
 
 	"github.com/go-chi/chi/v5"
 	"github.com/go-chi/chi/v5/middleware"
 	"github.com/go-chi/render"
-
 	"github.com/murar8/local-jwks-server/internal/config"
 	"github.com/murar8/local-jwks-server/internal/handler"
 	"github.com/murar8/local-jwks-server/internal/token"
 )
+
+const HTTPRequestTimeoutSecs = 30
 
 func main() {
 	cfg, err := config.New()
@@ -55,7 +57,13 @@ func main() {
 	addr := net.TCPAddr{IP: cfg.Server.Addr, Port: cfg.Server.Port}
 	log.Printf("listening on %s", addr.String())
 
-	if err = http.ListenAndServe(addr.String(), r); err != nil {
+	server := &http.Server{
+		Addr:              addr.String(),
+		Handler:           r,
+		ReadHeaderTimeout: HTTPRequestTimeoutSecs * time.Second,
+	}
+
+	if err = server.ListenAndServe(); err != nil {
 		log.Fatalf("failed to start server: %s", err)
 	}
 }

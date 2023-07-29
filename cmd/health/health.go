@@ -6,6 +6,7 @@ package main
 import (
 	"fmt"
 	"log"
+	"net"
 	"net/http"
 
 	"github.com/murar8/local-jwks-server/internal/config"
@@ -17,8 +18,10 @@ func main() {
 		log.Fatalf("failed to load config: %v", err)
 	}
 
-	url := fmt.Sprintf("http://%s:%d/health", cfg.Server.Addr, cfg.Server.Port)
+	host := net.JoinHostPort(cfg.Server.Addr.String(), fmt.Sprint(cfg.Server.Port))
+	url := fmt.Sprintf("http://%s/health", host)
 	res, err := http.Get(url)
+	res.Body.Close()
 
 	if err != nil || res.StatusCode != http.StatusOK {
 		log.Fatalf("health check failed: %v", err)

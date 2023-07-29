@@ -10,11 +10,10 @@ import (
 
 	"github.com/lestrrat-go/jwx/v2/jwk"
 	"github.com/lestrrat-go/jwx/v2/jwt"
-	"github.com/stretchr/testify/assert"
-
 	"github.com/murar8/local-jwks-server/internal/config"
 	"github.com/murar8/local-jwks-server/internal/handler"
 	"github.com/murar8/local-jwks-server/internal/token"
+	"github.com/stretchr/testify/assert"
 )
 
 type failingTokenService struct{}
@@ -27,7 +26,7 @@ func (f *failingTokenService) GetKeySet() (jwk.Set, error) {
 	return nil, fmt.Errorf("failed to build key set")
 }
 
-func (f *failingTokenService) SignToken(payload map[string]interface{}) ([]byte, error) {
+func (f *failingTokenService) SignToken(map[string]interface{}) ([]byte, error) {
 	return nil, fmt.Errorf("failed to sign token")
 }
 
@@ -47,7 +46,11 @@ func makeHandleJWKSRequest(ts token.Service) *http.Response {
 }
 
 func makeHandleSignRequest(ts token.Service, payload interface{}) *http.Response {
-	body, _ := json.Marshal(payload)
+	body, err := json.Marshal(payload)
+	if err != nil {
+		panic(err)
+	}
+
 	req := httptest.NewRequest(http.MethodPost, "/jwt/sign", bytes.NewReader(body))
 	w := httptest.NewRecorder()
 	h := handler.New(ts)
@@ -56,7 +59,11 @@ func makeHandleSignRequest(ts token.Service, payload interface{}) *http.Response
 }
 
 func TestHandleJWKS(t *testing.T) {
+	t.Parallel()
+
 	t.Run(("serializes the supplied JWK set"), func(t *testing.T) {
+		t.Parallel()
+
 		ts := makeTokenService()
 		res := makeHandleJWKSRequest(ts)
 
@@ -72,6 +79,8 @@ func TestHandleJWKS(t *testing.T) {
 	})
 
 	t.Run(("returns an error if the key set cannot be generated"), func(t *testing.T) {
+		t.Parallel()
+
 		ts := &failingTokenService{}
 		res := makeHandleJWKSRequest(ts)
 
@@ -81,13 +90,17 @@ func TestHandleJWKS(t *testing.T) {
 
 		assert.NoError(t, err)
 		assert.Equal(t, http.StatusInternalServerError, res.StatusCode)
-		assert.EqualValues(t, http.StatusInternalServerError, data["status_code"])
+		assert.EqualValues(t, http.StatusInternalServerError, data["statusCode"])
 		assert.Equal(t, "failed to build key set", data["error"])
 	})
 }
 
 func TestHandleSign(t *testing.T) {
+	t.Parallel()
+
 	t.Run(("generates a signed jwt with the provided payload"), func(t *testing.T) {
+		t.Parallel()
+
 		ts := makeTokenService()
 		payload := map[string]interface{}{"sub": "john_doe", "custom": "value"}
 		res := makeHandleSignRequest(ts, payload)
@@ -114,6 +127,8 @@ func TestHandleSign(t *testing.T) {
 	})
 
 	t.Run(("returns bad request status if the payload is invalid"), func(t *testing.T) {
+		t.Parallel()
+
 		payload := map[string]interface{}{"iat": "invalid"}
 		res := makeHandleSignRequest(makeTokenService(), payload)
 		res.Body.Close()
@@ -122,6 +137,8 @@ func TestHandleSign(t *testing.T) {
 	})
 
 	t.Run(("returns unprocessable entity status if the payload is malformed"), func(t *testing.T) {
+		t.Parallel()
+
 		ts := makeTokenService()
 		res := makeHandleSignRequest(ts, "invalid")
 
@@ -131,7 +148,7 @@ func TestHandleSign(t *testing.T) {
 
 		assert.NoError(t, err)
 		assert.Equal(t, http.StatusUnprocessableEntity, res.StatusCode)
-		assert.EqualValues(t, http.StatusUnprocessableEntity, data["status_code"])
+		assert.EqualValues(t, http.StatusUnprocessableEntity, data["statusCode"])
 		assert.NotNil(t, data["error"])
 	})
 }
