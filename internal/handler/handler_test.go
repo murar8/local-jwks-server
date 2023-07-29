@@ -102,7 +102,7 @@ func TestHandleSign(t *testing.T) {
 		key := ts.GetKey()
 
 		var raw interface{}
-		key.Raw(&raw)
+		_ = key.Raw(&raw)
 
 		encoded, _ := (data["jwt"].(string))
 

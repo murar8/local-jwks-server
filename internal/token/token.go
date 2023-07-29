@@ -55,7 +55,7 @@ func (s *service) GetKeySet() (jwk.Set, error) {
 	}
 
 	set := jwk.NewSet()
-	set.AddKey(pk)
+	_ = set.AddKey(pk)
 
 	return set, nil
 }

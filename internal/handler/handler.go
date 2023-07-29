@@ -24,7 +24,7 @@ func New(tokenService token.Service) Handler {
 func (h *handler) HandleJWKS(w http.ResponseWriter, r *http.Request) {
 	if set, err := h.tokenService.GetKeySet(); err != nil {
 		res := &ErrorResponse{Error: err.Error(), StatusCode: http.StatusInternalServerError}
-		render.Render(w, r, res)
+		_ = render.Render(w, r, res)
 	} else {
 		render.JSON(w, r, set)
 	}
@@ -34,16 +34,16 @@ func (h *handler) HandleSign(w http.ResponseWriter, r *http.Request) {
 	var payload map[string]interface{}
 	if err := json.NewDecoder(r.Body).Decode(&payload); err != nil {
 		res := &ErrorResponse{Error: err.Error(), StatusCode: http.StatusUnprocessableEntity}
-		render.Render(w, r, res)
+		_ = render.Render(w, r, res)
 		return
 	}
 
 	signed, err := h.tokenService.SignToken(payload)
 	if err != nil {
 		res := &ErrorResponse{Error: err.Error(), StatusCode: http.StatusBadRequest}
-		render.Render(w, r, res)
+		_ = render.Render(w, r, res)
 		return
 	}
 
-	render.Render(w, r, &HandleSignResponse{Jwt: string(signed)})
+	_ = render.Render(w, r, &HandleSignResponse{Jwt: string(signed)})
 }
