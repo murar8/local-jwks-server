@@ -21,8 +21,9 @@ services:
         image: ghcr.io/murar8/local-jwks-server:latest
         volumes:
             # [OPTIONAL] Must contain a private key in PEM format.
-            # If no private key file is found provided the server will generate
+            # If no private key file is provided the server will generate
             # a random key upon startup based on the provided configuration.
+            # The server conguration must match the private key format.
             - ./jwks-private-key.pem:/etc/local-jwks-server/key.pem
         ports:
             - 8080:8080
