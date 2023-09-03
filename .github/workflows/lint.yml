@@ -8,22 +8,10 @@ jobs:
         runs-on: ubuntu-latest
 
         steps:
-            - name: Checkout
-              uses: actions/checkout@v3
-              with:
-                  fetch-depth: 0
-
-            - name: Prettier
-              uses: actionsx/prettier@v2
-              with:
-                  args: --check .
-
             - name: Setup Go
               uses: actions/setup-go@v4
               with:
                   go-version: "1.20"
 
-            - name: Lint
-              uses: golangci/golangci-lint-action@v3
-              with:
-                  skip-pkg-cache: true
+            - name: Pre Commit
+              uses: pre-commit/action@v3.0.0

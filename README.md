@@ -95,10 +95,16 @@ All configuration is managed via environment variables:
 
 The repository comes with a preconfigured development container for VSCode. To use it, simply open the repository in VSCode and click the "Reopen in Container" button.
 
+### Installing the pre-commit hooks
+
+```bash
+pre-commit install
+```
+
 ### Starting a development server
 
 ```bash
-go run github.com/cosmtrek/air
+go run github.com/cosmtrek/air@latest
 ```
 
 ### Running the unit test suite

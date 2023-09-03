@@ -1,0 +1,45 @@
+# See https://pre-commit.com for more information
+# See https://pre-commit.com/hooks.html for more hooks
+
+fail_fast: true
+
+default_install_hook_types:
+    - pre-commit
+    - commit-msg
+
+repos:
+    - repo: https://github.com/pre-commit/pre-commit-hooks
+      rev: v4.4.0
+      hooks:
+          - id: check-added-large-files
+          - id: check-case-conflict
+          - id: check-executables-have-shebangs
+          - id: check-merge-conflict
+          - id: check-shebang-scripts-are-executable
+          - id: check-symlinks
+          - id: check-vcs-permalinks
+          - id: destroyed-symlinks
+          - id: fix-byte-order-marker
+
+    - repo: https://github.com/pre-commit/mirrors-prettier
+      rev: v3.0.2
+      hooks:
+          - id: prettier
+            stages: [commit]
+
+    - repo: https://github.com/golangci/golangci-lint
+      rev: v1.54.1
+      hooks:
+          - id: golangci-lint
+
+    - repo: https://github.com/scop/pre-commit-shfmt
+      rev: v3.7.0-1
+      hooks:
+          - id: shfmt-docker
+
+    - repo: https://github.com/alessandrojcm/commitlint-pre-commit-hook
+      rev: v9.5.0
+      hooks:
+          - id: commitlint
+            stages: [commit-msg]
+            additional_dependencies: ["@commitlint/config-conventional"]

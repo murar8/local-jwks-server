@@ -1,16 +1,23 @@
 {
     "name": "local-jwks-server",
     "image": "mcr.microsoft.com/devcontainers/go:1",
+    // Mount the remote workspace to the same path as the local workspace.
+    // This is done to allow the use of bind mounts from within the devcontainer.
+    // See https://github.com/devcontainers/features/tree/main/src/docker-outside-of-docker
+    "workspaceFolder": "${localWorkspaceFolder}",
+    "workspaceMount": "source=${localWorkspaceFolder},target=${localWorkspaceFolder},type=bind",
     "features": {
+        "ghcr.io/devcontainers-contrib/features/pre-commit:2": {},
         "ghcr.io/guiyomh/features/golangci-lint:0": {},
-        "ghcr.io/devcontainers/features/docker-outside-of-docker": {}
+        "ghcr.io/devcontainers-contrib/features/prettier:1": {},
+        "ghcr.io/devcontainers/features/docker-outside-of-docker:1": {}
     },
     "customizations": {
         "vscode": {
             "settings": {
                 // Make gopls work with build tags.
                 // See https://github.com/golang/go/issues/29202#issuecomment-881953121
-                "go.buildTags": "e2e,tools",
+                "go.buildTags": "e2e",
                 "go.lintTool": "golangci-lint",
                 "go.lintFlags": ["--fast"]
             },
