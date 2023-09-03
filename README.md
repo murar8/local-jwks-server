@@ -19,9 +19,16 @@ Docker compose can also be used:
 services:
     local-jwks-server:
         image: ghcr.io/murar8/local-jwks-server:latest
+        volumes:
+            # [OPTIONAL] Must contain a private key in PEM format.
+            # If no private key file is found provided the server will generate
+            # a random key upon startup based on the provided configuration.
+            - ./jwks-private-key.pem:/etc/local-jwks-server/key.pem
         ports:
             - 8080:8080
-        # Healthcheck is configured by default.
+        # Healthcheck command is configured by default.
+        healthcheck:
+            retries: 10
 
     my-app:
         build: .
@@ -31,8 +38,6 @@ services:
             local-jwks-server:
                 condition: service_healthy
 ```
-
-The server will generate a random key upon startup based on the provided configuration.
 
 ## Usage
 
@@ -82,14 +87,15 @@ curl -X POST -H "Content-Type: application/json" -d '{ "sub": "lnzmrr@gmail.com"
 
 All configuration is managed via environment variables:
 
-| Name                    | Description                              | Default |
-| ----------------------- | ---------------------------------------- | ------- |
-| JWK_ALG                 | RFC7518 JWS Algorithm.                   | RS256   |
-| JWK_KEY_OPS             | RFC7517 Key Operations, comma separated. | -       |
-| JWK_RSA_KEY_SIZE        | RSA key size.                            | 2048    |
-| SERVER_ADDR             | Server listening address.                | 0.0.0.0 |
-| SERVER_PORT             | Server listening port.                   | 8080    |
-| SERVER_HTTP_REQ_TIMEOUT | Server HTTP request timeout.             | 30s     |
+| Name                    | Description                              | Default                        |
+| ----------------------- | ---------------------------------------- | ------------------------------ |
+| JWK_ALG                 | RFC7518 JWS Algorithm.                   | RS256                          |
+| JWK_KEY_FILE            | Private key file path.                   | /etc/local-jwks-server/key.pem |
+| JWK_RSA_KEY_SIZE        | RSA key size.                            | 2048                           |
+| JWK_KEY_OPS             | RFC7517 Key Operations, comma separated. | -                              |
+| SERVER_ADDR             | Server listening address.                | 0.0.0.0                        |
+| SERVER_PORT             | Server listening port.                   | 8080                           |
+| SERVER_HTTP_REQ_TIMEOUT | Server HTTP request timeout.             | 30s                            |
 
 ## Contributing
 

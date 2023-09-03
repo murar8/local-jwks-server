@@ -2,7 +2,6 @@ package token
 
 import (
 	"crypto/ecdsa"
-	"crypto/elliptic"
 	"crypto/rand"
 	"crypto/rsa"
 	"errors"
@@ -11,10 +10,12 @@ import (
 	"github.com/lestrrat-go/jwx/v2/jwa"
 )
 
-var ErrUnsupportedAlgorithm = errors.New("unsupported algorithm")
+// ErrUnsupportedGenAlgorithm is returned when the algorithm is not supported
+// for key generation.
+var ErrUnsupportedGenAlgorithm = errors.New("unsupported algorithm for key generation")
 
-// GenerateRawKey generates an RSA or ECDSA key based on the provided algorithm.
-func GenerateRawKey(alg jwa.SignatureAlgorithm, keySize int) (interface{}, error) {
+// GeneratePrivateKey generates an RSA or ECDSA key based on the provided algorithm.
+func GeneratePrivateKey(alg jwa.SignatureAlgorithm, keySize int) (interface{}, error) {
 	var key interface{}
 	var err error
 
@@ -27,14 +28,14 @@ func GenerateRawKey(alg jwa.SignatureAlgorithm, keySize int) (interface{}, error
 		jwa.PS384,
 		jwa.PS512:
 		key, err = rsa.GenerateKey(rand.Reader, keySize)
-	case jwa.ES256:
-		key, err = ecdsa.GenerateKey(elliptic.P256(), rand.Reader)
-	case jwa.ES384:
-		key, err = ecdsa.GenerateKey(elliptic.P384(), rand.Reader)
-	case jwa.ES512:
-		key, err = ecdsa.GenerateKey(elliptic.P521(), rand.Reader)
+	case
+		jwa.ES256,
+		jwa.ES384,
+		jwa.ES512:
+		curve, _ := AlgorithmToECDSACurve(alg)
+		key, err = ecdsa.GenerateKey(curve, rand.Reader)
 	default:
-		err = fmt.Errorf("%w: %s", ErrUnsupportedAlgorithm, alg)
+		err = fmt.Errorf("%w: %s", ErrUnsupportedGenAlgorithm, alg)
 	}
 
 	return key, err
