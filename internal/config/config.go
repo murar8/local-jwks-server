@@ -12,8 +12,9 @@ import (
 
 type JWK struct {
 	Alg        jwa.SignatureAlgorithm `env:"JWK_ALG,notEmpty" envDefault:"RS256"`
-	KeyOps     jwk.KeyOperationList   `env:"JWK_KEY_OPS"`
 	RsaKeySize int                    `env:"JWK_RSA_KEY_SIZE" envDefault:"2048"`
+	KeyFile    string                 `env:"JWK_KEY_FILE"     envDefault:"/etc/local-jwks-server/key.pem"`
+	KeyOps     jwk.KeyOperationList   `env:"JWK_KEY_OPS"`
 }
 
 type Server struct {

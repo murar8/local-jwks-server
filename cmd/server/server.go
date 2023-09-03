@@ -4,6 +4,7 @@ import (
 	"log"
 	"net"
 	"net/http"
+	"os"
 
 	"github.com/go-chi/chi/v5"
 	"github.com/go-chi/chi/v5/middleware"
@@ -19,12 +20,26 @@ func main() {
 		log.Fatalf("failed to initialize config: %s", err)
 	}
 
-	raw, err := token.GenerateRawKey(cfg.JWK.Alg, cfg.JWK.RsaKeySize)
+	keyFile, err := os.ReadFile(cfg.JWK.KeyFile)
+	if err != nil && !os.IsNotExist(err) {
+		log.Fatalf("failed to read key file: %s", err)
+	}
+
+	var privateKey interface{}
+
+	if os.IsNotExist(err) {
+		log.Println("key file not found, generating a random key")
+		privateKey, err = token.GeneratePrivateKey(cfg.JWK.Alg, cfg.JWK.RsaKeySize)
+	} else {
+		log.Printf("using key from %s", cfg.JWK.KeyFile)
+		privateKey, err = token.ParsePrivateKey(keyFile, cfg.JWK.Alg)
+	}
+
 	if err != nil {
 		log.Fatalf("failed to generate key: %s", err)
 	}
 
-	tokenService, err := token.FromRawKey(raw, &cfg.JWK)
+	tokenService, err := token.FromRawKey(privateKey, &cfg.JWK)
 	if err != nil {
 		log.Fatalf("failed to initialize token service: %s", err)
 	}

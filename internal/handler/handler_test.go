@@ -32,7 +32,7 @@ func (f *failingTokenService) SignToken(map[string]interface{}) ([]byte, error) 
 
 func makeTokenService() token.Service {
 	cfg := config.JWK{Alg: "RS256", KeyOps: jwk.KeyOperationList{"sign", "verify"}}
-	raw, _ := token.GenerateRawKey(cfg.Alg, 2048)
+	raw, _ := token.GeneratePrivateKey(cfg.Alg, 2048)
 	ts, _ := token.FromRawKey(raw, &cfg)
 	return ts
 }

@@ -20,6 +20,7 @@ func TestNew(t *testing.T) {
 		assert.Equal(t, 8080, cfg.Server.Port)
 		assert.Equal(t, 30*time.Second, cfg.Server.HTTPReqTimeout)
 		assert.Equal(t, jwa.RS256, cfg.JWK.Alg)
+		assert.Equal(t, "/etc/local-jwks-server/key.pem", cfg.JWK.KeyFile)
 		assert.Empty(t, cfg.JWK.KeyOps)
 		assert.Equal(t, 2048, cfg.JWK.RsaKeySize)
 	})
@@ -29,6 +30,7 @@ func TestNew(t *testing.T) {
 		t.Setenv("SERVER_PORT", "3547")
 		t.Setenv("JWK_RSA_KEY_SIZE", "4096")
 		t.Setenv("JWK_ALG", "RS512")
+		t.Setenv("JWK_KEY_FILE", "/tmp/jwks-private-key")
 		t.Setenv("JWK_KEY_OPS", "sign,verify")
 		t.Setenv("SERVER_HTTP_REQ_TIMEOUT", "60s")
 
@@ -38,8 +40,9 @@ func TestNew(t *testing.T) {
 		assert.Equal(t, 3547, cfg.Server.Port)
 		assert.Equal(t, 60*time.Second, cfg.Server.HTTPReqTimeout)
 		assert.Equal(t, jwa.RS512, cfg.JWK.Alg)
-		assert.Equal(t, jwk.KeyOperationList{"sign", "verify"}, cfg.JWK.KeyOps)
+		assert.Equal(t, "/tmp/jwks-private-key", cfg.JWK.KeyFile)
 		assert.Equal(t, 4096, cfg.JWK.RsaKeySize)
+		assert.Equal(t, jwk.KeyOperationList{"sign", "verify"}, cfg.JWK.KeyOps)
 	})
 
 	t.Run("returns an error if environment variables are invalid", func(t *testing.T) {

@@ -7,6 +7,8 @@ services:
             x-bake:
                 cache-from: type=gha,scope=$GITHUB_REF_NAME-app
                 cache-to: type=gha,scope=$GITHUB_REF_NAME-app,mode=max
+        volumes:
+            - ./jwks-private-key.pem:/etc/local-jwks-server/key.pem
 
     test-e2e:
         image: test-e2e:latest
