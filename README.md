@@ -27,7 +27,7 @@ services:
             - ./jwks-private-key.pem:/etc/local-jwks-server/key.pem
         ports:
             - 8080:8080
-        # Healthcheck command is configured by default.
+        # [OPTIONAL] Healthcheck command is configured by default.
         healthcheck:
             retries: 10
 
