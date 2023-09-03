@@ -1,3 +1,4 @@
+//nolint:wrapcheck // No need to wrap errors here.
 package main
 
 import (
@@ -14,29 +15,56 @@ import (
 	"github.com/murar8/local-jwks-server/internal/token"
 )
 
-func main() {
-	cfg, err := config.New()
-	if err != nil {
-		log.Fatalf("failed to initialize config: %s", err)
-	}
-
-	keyFile, err := os.ReadFile(cfg.JWK.KeyFile)
+func createPrivateKey(cfg *config.JWK) (interface{}, error) {
+	keyFile, err := os.ReadFile(cfg.KeyFile)
 	if err != nil && !os.IsNotExist(err) {
-		log.Fatalf("failed to read key file: %s", err)
+		return nil, err
 	}
 
 	var privateKey interface{}
 
 	if os.IsNotExist(err) {
 		log.Println("key file not found, generating a random key")
-		privateKey, err = token.GeneratePrivateKey(cfg.JWK.Alg, cfg.JWK.RsaKeySize)
+		privateKey, err = token.GeneratePrivateKey(cfg.Alg, cfg.RsaKeySize)
 	} else {
-		log.Printf("using key from %s", cfg.JWK.KeyFile)
-		privateKey, err = token.ParsePrivateKey(keyFile, cfg.JWK.Alg)
+		log.Printf("using key from %s", cfg.KeyFile)
+		privateKey, err = token.ParsePrivateKey(keyFile, cfg.Alg)
 	}
 
+	return privateKey, err
+}
+
+func createRouter() *chi.Mux {
+	router := chi.NewRouter()
+
+	router.NotFound(func(w http.ResponseWriter, r *http.Request) {
+		res := &handler.ErrorResponse{Error: "not found", StatusCode: http.StatusNotFound}
+		render.Render(w, r, res)
+	})
+	router.MethodNotAllowed(func(w http.ResponseWriter, r *http.Request) {
+		res := &handler.ErrorResponse{Error: "method not allowed", StatusCode: http.StatusMethodNotAllowed}
+		render.Render(w, r, res)
+	})
+
+	router.Use(middleware.AllowContentType("application/json"))
+	router.Use(middleware.Heartbeat("/health"))
+	router.Use(middleware.RequestID)
+	router.Use(middleware.Logger)
+	router.Use(middleware.Recoverer)
+	router.Use(render.SetContentType(render.ContentTypeJSON))
+
+	return router
+}
+
+func main() {
+	cfg, err := config.New()
 	if err != nil {
-		log.Fatalf("failed to generate key: %s", err)
+		log.Fatalf("failed to initialize config: %s", err)
+	}
+
+	privateKey, err := createPrivateKey(&cfg.JWK)
+	if err != nil {
+		log.Fatalf("failed to initialize private key: %s", err)
 	}
 
 	tokenService, err := token.FromRawKey(privateKey, &cfg.JWK)
@@ -44,34 +72,17 @@ func main() {
 		log.Fatalf("failed to initialize token service: %s", err)
 	}
 
-	r := chi.NewRouter()
-
-	r.NotFound(func(w http.ResponseWriter, r *http.Request) {
-		res := &handler.ErrorResponse{Error: "not found", StatusCode: http.StatusNotFound}
-		render.Render(w, r, res)
-	})
-	r.MethodNotAllowed(func(w http.ResponseWriter, r *http.Request) {
-		res := &handler.ErrorResponse{Error: "method not allowed", StatusCode: http.StatusMethodNotAllowed}
-		render.Render(w, r, res)
-	})
-
-	r.Use(middleware.AllowContentType("application/json"))
-	r.Use(middleware.Heartbeat("/health"))
-	r.Use(middleware.RequestID)
-	r.Use(middleware.Logger)
-	r.Use(middleware.Recoverer)
-	r.Use(render.SetContentType(render.ContentTypeJSON))
-
-	h := handler.New(tokenService)
-	r.Get("/.well-known/jwks.json", h.HandleJWKS)
-	r.Post("/jwt/sign", h.HandleSign)
+	router := createRouter()
+	handlers := handler.New(tokenService)
+	router.Get("/.well-known/jwks.json", handlers.HandleJWKS)
+	router.Post("/jwt/sign", handlers.HandleSign)
 
 	addr := net.TCPAddr{IP: cfg.Server.Addr, Port: cfg.Server.Port}
 	log.Printf("listening on %s", addr.String())
 
 	server := &http.Server{
 		Addr:              addr.String(),
-		Handler:           r,
+		Handler:           router,
 		ReadHeaderTimeout: cfg.Server.HTTPReqTimeout,
 	}
 
