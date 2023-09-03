@@ -1,6 +1,8 @@
 package token
 
 import (
+	"fmt"
+
 	"github.com/lestrrat-go/jwx/v2/jwk"
 	"github.com/lestrrat-go/jwx/v2/jwt"
 	"github.com/murar8/local-jwks-server/internal/config"
@@ -19,7 +21,7 @@ type service struct {
 func FromRawKey(raw interface{}, cfg *config.JWK) (Service, error) {
 	key, err := jwk.FromRaw(raw)
 	if err != nil {
-		return nil, err
+		return nil, fmt.Errorf("failed to parse key: %w", err)
 	}
 
 	fields := []struct {
@@ -33,12 +35,12 @@ func FromRawKey(raw interface{}, cfg *config.JWK) (Service, error) {
 
 	for _, f := range fields {
 		if err = key.Set(f.key, f.val); err != nil {
-			return nil, err
+			return nil, fmt.Errorf("failed to set key field: %w", err)
 		}
 	}
 
 	if err = jwk.AssignKeyID(key); err != nil {
-		return nil, err
+		return nil, fmt.Errorf("failed to assign key ID: %w", err)
 	}
 
 	return &service{key}, nil
@@ -51,7 +53,7 @@ func (s *service) GetKey() jwk.Key {
 func (s *service) GetKeySet() (jwk.Set, error) {
 	pk, err := s.key.PublicKey()
 	if err != nil {
-		return nil, err
+		return nil, fmt.Errorf("failed to get public key: %w", err)
 	}
 
 	set := jwk.NewSet()
@@ -66,9 +68,14 @@ func (s *service) SignToken(payload map[string]interface{}) ([]byte, error) {
 	for k, v := range payload {
 		err := t.Set(k, v)
 		if err != nil {
-			return nil, err
+			return nil, fmt.Errorf("failed to set payload: %w", err)
 		}
 	}
 
-	return jwt.Sign(t, jwt.WithKey(s.key.Algorithm(), s.key))
+	jwt, err := jwt.Sign(t, jwt.WithKey(s.key.Algorithm(), s.key))
+	if err != nil {
+		return nil, fmt.Errorf("failed to sign token: %w", err)
+	}
+
+	return jwt, nil
 }

@@ -34,14 +34,23 @@ func ParsePrivateKey(data []byte, alg jwa.SignatureAlgorithm) (interface{}, erro
 		return nil, ErrInvalidPEM
 	}
 
-	key, err = x509.ParsePKCS8PrivateKey(block.Bytes)
+	if key, err = x509.ParsePKCS8PrivateKey(block.Bytes); err != nil {
+		if key, err = x509.ParsePKCS1PrivateKey(block.Bytes); err != nil {
+			if key, err = x509.ParseECPrivateKey(block.Bytes); err != nil {
+				return nil, fmt.Errorf("%w: %s", ErrInvalidPEM, "failed to parse private key")
+			}
+		}
+	}
 
-	if err != nil {
-		key, err = x509.ParsePKCS1PrivateKey(block.Bytes)
+	if err = validateKey(key, alg); err != nil {
+		return nil, err
 	}
-	if err != nil {
-		key, err = x509.ParseECPrivateKey(block.Bytes)
-	}
+
+	return key, err
+}
+
+func validateKey(key interface{}, alg jwa.SignatureAlgorithm) error {
+	var err error
 
 	switch alg {
 	case
@@ -52,23 +61,24 @@ func ParsePrivateKey(data []byte, alg jwa.SignatureAlgorithm) (interface{}, erro
 		jwa.PS384,
 		jwa.PS512:
 		if _, ok := key.(*rsa.PrivateKey); !ok {
-			return nil, fmt.Errorf("%w: expected RSA private key", ErrWrongKeyType)
+			err = fmt.Errorf("%w: expected RSA private key", ErrWrongKeyType)
 		}
 	case
 		jwa.ES256,
 		jwa.ES384,
 		jwa.ES512:
 		ecdsaKey, ok := key.(*ecdsa.PrivateKey)
-		if !ok {
-			return nil, fmt.Errorf("%w: expected ECDSA private key", ErrWrongKeyType)
-		}
-		curve, _ := AlgorithmToECDSACurve(alg)
-		if ecdsaKey.Curve != curve {
-			return nil, fmt.Errorf("%w: expected %s curve", ErrWrongKeyType, alg)
+		if ok {
+			curve, _ := AlgorithmToECDSACurve(alg)
+			if ecdsaKey.Curve != curve {
+				err = fmt.Errorf("%w: expected %s curve", ErrWrongKeyType, alg)
+			}
+		} else {
+			err = fmt.Errorf("%w: expected ECDSA private key", ErrWrongKeyType)
 		}
 	default:
-		return nil, fmt.Errorf("%w: %s", ErrUnsupportedParseAlgorithm, alg)
+		err = fmt.Errorf("%w: %s", ErrUnsupportedParseAlgorithm, alg)
 	}
 
-	return key, err
+	return err
 }
