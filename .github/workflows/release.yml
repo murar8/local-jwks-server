@@ -23,7 +23,7 @@ jobs:
               id: docker-metadata
               uses: docker/metadata-action@v4
               with:
-                  images: ghcr.io/murar8/local-jwks-server
+                  images: ghcr.io/${{ github.repository_owner }}/local-jwks-server
                   tags: |
                       type=semver,pattern={{version}}
                       type=semver,pattern={{major}}
@@ -41,6 +41,7 @@ jobs:
               uses: docker/build-push-action@v4
               with:
                   push: true
+                  platforms: linux/amd64,linux/arm64
                   tags: ${{ steps.docker-metadata.outputs.tags }}
                   labels: ${{ steps.docker-metadata.outputs.labels }}
                   cache-from: type=gha,scope=$GITHUB_REF_NAME-app
