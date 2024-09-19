@@ -9,7 +9,7 @@ default_install_hook_types:
 
 repos:
     - repo: https://github.com/pre-commit/pre-commit-hooks
-      rev: v4.4.0
+      rev: v4.6.0
       hooks:
           - id: check-added-large-files
           - id: check-case-conflict
@@ -21,25 +21,29 @@ repos:
           - id: destroyed-symlinks
           - id: fix-byte-order-marker
 
-    - repo: https://github.com/pre-commit/mirrors-prettier
-      rev: v3.0.2
-      hooks:
-          - id: prettier
-            stages: [commit]
-
     - repo: https://github.com/golangci/golangci-lint
-      rev: v1.54.1
+      rev: v1.61.0
       hooks:
           - id: golangci-lint
 
     - repo: https://github.com/scop/pre-commit-shfmt
-      rev: v3.7.0-1
+      rev: v3.9.0-1
       hooks:
           - id: shfmt-docker
 
     - repo: https://github.com/alessandrojcm/commitlint-pre-commit-hook
-      rev: v9.5.0
+      rev: v9.18.0
       hooks:
           - id: commitlint
             stages: [commit-msg]
             additional_dependencies: ["@commitlint/config-conventional"]
+
+    - repo: local
+      hooks:
+          - id: prettier
+            name: prettier
+            entry: prettier --write --ignore-unknown --cache --cache-location=tmp/.prettier-cache
+            language: node
+            types: [text]
+            stages: [commit]
+            additional_dependencies: ["prettier@3"]

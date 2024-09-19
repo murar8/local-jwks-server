@@ -28,7 +28,7 @@ jobs:
                   docker compose -f docker-compose.test.yml run --rm test-e2e
 
             - name: Upload coverage report
-              uses: codecov/codecov-action@v3
+              uses: codecov/codecov-action@v4
               with:
                   token: ${{ secrets.CODECOV_TOKEN }}
                   files: ./coverage/coverage.out
