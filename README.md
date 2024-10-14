@@ -23,7 +23,7 @@ services:
             # [OPTIONAL] Must contain a private key in PEM format.
             # If no private key file is provided the server will generate
             # a random key upon startup based on the provided configuration.
-            # The server conguration must match the private key format.
+            # The server configuration must match the private key format.
             - ./jwks-private-key.pem:/etc/local-jwks-server/key.pem
         ports:
             - 8080:8080
@@ -46,7 +46,7 @@ services:
 
 The server exposes a JWKS endpoint at `/.well-known/jwks.json` that can be used to retrieve a JSON Web Key Set.
 
-#### Example:
+#### Example: Get a key
 
 ```bash
 curl http://localhost:8080/.well-known/jwks.json
@@ -72,7 +72,7 @@ curl http://localhost:8080/.well-known/jwks.json
 
 The server exposes a `/jwt/sign` endpoint that can be used to generate a signed JWT for testing purposes. This is useful during development and testing to generate a JWT that can be used to authenticate requests. You must provide the JWT payload as a JSON object in the request body.
 
-#### Example:
+#### Example: Generate a token
 
 ```bash
 curl -X POST -H "Content-Type: application/json" -d '{ "sub": "lnzmrr@gmail.com" }' http://localhost:8080/jwt/sign
@@ -116,13 +116,13 @@ go run github.com/cosmtrek/air@latest
 
 ### Running the unit test suite
 
-#### With docker:
+#### With docker
 
 ```bash
 docker compose -f docker-compose.test.yml run --rm --build test-unit
 ```
 
-#### Locally:
+#### Locally
 
 ```bash
 go test ./...

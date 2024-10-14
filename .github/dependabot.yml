@@ -2,6 +2,7 @@ version: 2
 
 updates:
     - package-ecosystem: "gomod"
+      directory: /
       schedule:
           interval: "daily"
       ignore:
@@ -9,8 +10,15 @@ updates:
             update-types:
                 - version-update:semver-minor
                 - version-update:semver-patch
+      groups:
+          breaking-changes:
+              patterns:
+                  - "*"
+              update-types:
+                  - major
 
     - package-ecosystem: "docker"
+      directory: /
       schedule:
           interval: "daily"
       ignore:
@@ -18,8 +26,15 @@ updates:
             update-types:
                 - version-update:semver-minor
                 - version-update:semver-patch
+      groups:
+          breaking-changes:
+              patterns:
+                  - "*"
+              update-types:
+                  - major
 
     - package-ecosystem: "github-actions"
+      directory: /
       schedule:
           interval: "daily"
       ignore:
@@ -27,3 +42,9 @@ updates:
             update-types:
                 - version-update:semver-minor
                 - version-update:semver-patch
+      groups:
+          breaking-changes:
+              patterns:
+                  - "*"
+              update-types:
+                  - major
