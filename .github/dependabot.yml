@@ -11,7 +11,7 @@ updates:
                 - version-update:semver-minor
                 - version-update:semver-patch
       groups:
-          breaking-changes:
+          gomod-breaking-changes:
               patterns:
                   - "*"
               update-types:
@@ -27,7 +27,7 @@ updates:
                 - version-update:semver-minor
                 - version-update:semver-patch
       groups:
-          breaking-changes:
+          docker-breaking-changes:
               patterns:
                   - "*"
               update-types:
@@ -43,7 +43,7 @@ updates:
                 - version-update:semver-minor
                 - version-update:semver-patch
       groups:
-          breaking-changes:
+          github-actions-breaking-changes:
               patterns:
                   - "*"
               update-types:
