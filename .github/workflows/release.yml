@@ -31,7 +31,7 @@ jobs:
                       type=sha,prefix=
 
             - name: Log in to GitHub Container Registry
-              uses: docker/login-action@65b78e6e13532edd9afa3aa52ac7964289d1a9c1
+              uses: docker/login-action@06895751d15a223ec091bea144ad5c7f50d228d0
               with:
                   registry: ghcr.io
                   username: ${{ github.actor }}
