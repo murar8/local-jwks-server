@@ -97,7 +97,7 @@ func TestSignToken(t *testing.T) {
 		cfg := &config.JWK{Alg: jwa.RS256}
 		ts, _ := token.FromRawKey(raw, cfg)
 		payload := map[string]interface{}{"sub": "john-doe", "name": "John Doe"}
-		token, err := ts.SignToken(payload)
+		token, err := ts.SignToken(payload, nil)
 		decoded, _ := jwt.Parse(token, jwt.WithKey(cfg.Alg, raw))
 
 		assert.NoError(t, err)
@@ -112,7 +112,7 @@ func TestSignToken(t *testing.T) {
 		cfg := &config.JWK{Alg: jwa.RS256}
 		ts, _ := token.FromRawKey(raw, cfg)
 		payload := map[string]interface{}{"iat": "invalid"}
-		token, err := ts.SignToken(payload)
+		token, err := ts.SignToken(payload, nil)
 
 		assert.Nil(t, token)
 		assert.Error(t, err)

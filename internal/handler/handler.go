@@ -38,7 +38,15 @@ func (h *handler) HandleSign(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	signed, err := h.tokenService.SignToken(payload)
+	// Extract headers from query parameters
+	headers := make(map[string]interface{})
+	for k, v := range r.URL.Query() {
+		if len(v) > 0 {
+			headers[k] = v[0]
+		}
+	}
+
+	signed, err := h.tokenService.SignToken(payload, headers)
 	if err != nil {
 		res := &ErrorResponse{Error: err.Error(), StatusCode: http.StatusBadRequest}
 		render.Render(w, r, res)

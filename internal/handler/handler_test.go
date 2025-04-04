@@ -9,6 +9,7 @@ import (
 	"testing"
 
 	"github.com/lestrrat-go/jwx/v2/jwk"
+	"github.com/lestrrat-go/jwx/v2/jws"
 	"github.com/lestrrat-go/jwx/v2/jwt"
 	"github.com/murar8/local-jwks-server/internal/config"
 	"github.com/murar8/local-jwks-server/internal/handler"
@@ -26,7 +27,7 @@ func (f *failingTokenService) GetKeySet() (jwk.Set, error) {
 	return nil, fmt.Errorf("failed to build key set")
 }
 
-func (f *failingTokenService) SignToken(map[string]interface{}) ([]byte, error) {
+func (f *failingTokenService) SignToken(payload map[string]interface{}, headers map[string]interface{}) ([]byte, error) {
 	return nil, fmt.Errorf("failed to sign token")
 }
 
@@ -45,13 +46,21 @@ func makeHandleJWKSRequest(ts token.Service) *http.Response {
 	return w.Result()
 }
 
-func makeHandleSignRequest(ts token.Service, payload interface{}) *http.Response {
+func makeHandleSignRequest(ts token.Service, payload interface{}, headers map[string]string) *http.Response {
 	body, err := json.Marshal(payload)
 	if err != nil {
 		panic(err)
 	}
 
 	req := httptest.NewRequest(http.MethodPost, "/jwt/sign", bytes.NewReader(body))
+
+	// Add headers to query parameters
+	q := req.URL.Query()
+	for k, v := range headers {
+		q.Add(k, v)
+	}
+	req.URL.RawQuery = q.Encode()
+
 	w := httptest.NewRecorder()
 	h := handler.New(ts)
 	h.HandleSign(w, req)
@@ -98,12 +107,13 @@ func TestHandleJWKS(t *testing.T) {
 func TestHandleSign(t *testing.T) {
 	t.Parallel()
 
-	t.Run(("generates a signed jwt with the provided payload"), func(t *testing.T) {
+	t.Run(("generates a signed jwt with the provided payload and headers"), func(t *testing.T) {
 		t.Parallel()
 
 		ts := makeTokenService()
 		payload := map[string]interface{}{"sub": "john_doe", "custom": "value"}
-		res := makeHandleSignRequest(ts, payload)
+		headers := map[string]string{"tenant": "test"}
+		res := makeHandleSignRequest(ts, payload, headers)
 
 		var data map[string]interface{}
 		err := json.NewDecoder(res.Body).Decode(&data)
@@ -124,13 +134,18 @@ func TestHandleSign(t *testing.T) {
 		assert.NoError(t, err)
 		assert.Equal(t, "john_doe", parsed.Subject())
 		assert.Equal(t, "value", parsed.PrivateClaims()["custom"])
+
+		msg, err := jws.Parse([]byte(encoded))
+		assert.NoError(t, err)
+		orgId, _ := msg.Signatures()[0].ProtectedHeaders().Get("tenant")
+		assert.Equal(t, "test", orgId)
 	})
 
 	t.Run(("returns bad request status if the payload is invalid"), func(t *testing.T) {
 		t.Parallel()
 
 		payload := map[string]interface{}{"iat": "invalid"}
-		res := makeHandleSignRequest(makeTokenService(), payload)
+		res := makeHandleSignRequest(makeTokenService(), payload, nil)
 		res.Body.Close()
 
 		assert.Equal(t, http.StatusBadRequest, res.StatusCode)
@@ -140,7 +155,7 @@ func TestHandleSign(t *testing.T) {
 		t.Parallel()
 
 		ts := makeTokenService()
-		res := makeHandleSignRequest(ts, "invalid")
+		res := makeHandleSignRequest(ts, "invalid", nil)
 
 		var data map[string]interface{}
 		err := json.NewDecoder(res.Body).Decode(&data)
