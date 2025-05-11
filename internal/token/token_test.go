@@ -4,7 +4,11 @@ import (
 	"context"
 	"crypto/rand"
 	"crypto/rsa"
+	"encoding/json"
+	"strings"
 	"testing"
+
+	"encoding/base64"
 
 	"github.com/lestrrat-go/jwx/v2/jwa"
 	"github.com/lestrrat-go/jwx/v2/jwk"
@@ -103,6 +107,55 @@ func TestSignToken(t *testing.T) {
 		assert.NoError(t, err)
 		assert.Equal(t, payload["sub"], decoded.Subject())
 		assert.Equal(t, payload["name"], decoded.PrivateClaims()["name"])
+	})
+
+	t.Run("flattens audience when enabled", func(t *testing.T) {
+		t.Parallel()
+
+		raw, _ := rsa.GenerateKey(rand.Reader, 2048)
+		cfg := &config.JWK{Alg: jwa.RS256, FlattenAudience: true}
+		ts, _ := token.FromRawKey(raw, cfg)
+
+		// Create a payload with a single audience value as an array
+		payload := map[string]interface{}{
+			"sub": "john-doe",
+			"aud": []string{"single-audience"},
+		}
+
+		tokenBytes, err := ts.SignToken(payload)
+		assert.NoError(t, err)
+
+		// Parse without validation to check the token
+		token, err := jwt.Parse(tokenBytes, jwt.WithVerify(false))
+		assert.NoError(t, err)
+
+		// Audience should be accessible as an array via the API
+		aud := token.Audience()
+		assert.Len(t, aud, 1)
+		assert.Equal(t, "single-audience", aud[0])
+
+		// Convert the JWT to a string so we can verify the serialized form
+		tokenStr := string(tokenBytes)
+
+		// Split the JWT by dots to get the payload section
+		parts := strings.Split(tokenStr, ".")
+		assert.Len(t, parts, 3, "JWT should have 3 parts")
+
+		// Decode the payload (second part)
+		payload64 := parts[1]
+		payloadJSON, err := base64.RawURLEncoding.DecodeString(payload64)
+		assert.NoError(t, err)
+
+		// Parse the payload to a map
+		var payloadMap map[string]interface{}
+		err = json.Unmarshal(payloadJSON, &payloadMap)
+		assert.NoError(t, err)
+
+		// Check if "aud" exists and is a string, not an array
+		audValue, ok := payloadMap["aud"]
+		assert.True(t, ok, "audience should exist in the payload")
+		_, isString := audValue.(string)
+		assert.True(t, isString, "audience should be flattened to a string")
 	})
 
 	t.Run("returns an error if the payload is invalid", func(t *testing.T) {

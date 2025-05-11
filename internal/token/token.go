@@ -15,7 +15,8 @@ type Service interface {
 }
 
 type service struct {
-	key jwk.Key
+	key             jwk.Key
+	flattenAudience bool
 }
 
 func FromRawKey(raw interface{}, cfg *config.JWK) (Service, error) {
@@ -43,7 +44,10 @@ func FromRawKey(raw interface{}, cfg *config.JWK) (Service, error) {
 		return nil, fmt.Errorf("failed to assign key ID: %w", err)
 	}
 
-	return &service{key}, nil
+	return &service{
+		key:             key,
+		flattenAudience: cfg.FlattenAudience,
+	}, nil
 }
 
 func (s *service) GetKey() jwk.Key {
@@ -70,6 +74,10 @@ func (s *service) SignToken(payload map[string]interface{}) ([]byte, error) {
 		if err != nil {
 			return nil, fmt.Errorf("failed to set payload: %w", err)
 		}
+	}
+
+	if s.flattenAudience {
+		t.Options().Enable(jwt.FlattenAudience)
 	}
 
 	jwt, err := jwt.Sign(t, jwt.WithKey(s.key.Algorithm(), s.key))
