@@ -88,16 +88,16 @@ curl -X POST -H "Content-Type: application/json" -d '{ "sub": "lnzmrr@gmail.com"
 
 All configuration is managed via environment variables:
 
-| Name                    | Description                              | Default                        |
-| ----------------------- | ---------------------------------------- | ------------------------------ |
-| JWK_ALG                 | RFC7518 JWS Algorithm.                   | RS256                          |
-| JWK_KEY_FILE            | Private key file path.                   | /etc/local-jwks-server/key.pem |
-| JWK_RSA_KEY_SIZE        | RSA key size.                            | 2048                           |
-| JWK_KEY_OPS             | RFC7517 Key Operations, comma separated. | -                              |
+| Name                    | Description                                 | Default                        |
+| ----------------------- | ------------------------------------------- | ------------------------------ |
+| JWK_ALG                 | RFC7518 JWS Algorithm.                      | RS256                          |
+| JWK_KEY_FILE            | Private key file path.                      | /etc/local-jwks-server/key.pem |
+| JWK_RSA_KEY_SIZE        | RSA key size.                               | 2048                           |
+| JWK_KEY_OPS             | RFC7517 Key Operations, comma separated.    | -                              |
 | JWK_FLATTEN_AUDIENCE    | Flatten audience to string if single value. | false                          |
-| SERVER_ADDR             | Server listening address.                | 0.0.0.0                        |
-| SERVER_PORT             | Server listening port.                   | 8080                           |
-| SERVER_HTTP_REQ_TIMEOUT | Server HTTP request timeout.             | 30s                            |
+| SERVER_ADDR             | Server listening address.                   | 0.0.0.0                        |
+| SERVER_PORT             | Server listening port.                      | 8080                           |
+| SERVER_HTTP_REQ_TIMEOUT | Server HTTP request timeout.                | 30s                            |
 
 ## Contributing
 

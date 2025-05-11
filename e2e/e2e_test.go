@@ -15,6 +15,7 @@ import (
 	"github.com/lestrrat-go/jwx/v2/jwk"
 	"github.com/lestrrat-go/jwx/v2/jwt"
 	"github.com/stretchr/testify/assert"
+	"github.com/stretchr/testify/require"
 )
 
 var signPath string
@@ -36,7 +37,7 @@ func TestHandlers(t *testing.T) {
 
 		res, err := http.Post(signPath, "application/json", strings.NewReader(body))
 
-		assert.NoError(t, err)
+		require.NoError(t, err)
 		assert.Equal(t, http.StatusCreated, res.StatusCode)
 
 		var data map[string]string
@@ -44,7 +45,7 @@ func TestHandlers(t *testing.T) {
 		res.Body.Close()
 		token = data["jwt"]
 
-		assert.NoError(t, err)
+		require.NoError(t, err)
 		assert.NotNil(t, token)
 	})
 
@@ -55,14 +56,14 @@ func TestHandlers(t *testing.T) {
 		var err error
 		keySet, err = jwk.Fetch(ctx, jwksPath)
 
-		assert.NoError(t, err)
+		require.NoError(t, err)
 		assert.NotNil(t, keySet)
 	})
 
 	t.Run("the JWT can be validated against the JWKS endpoint", func(t *testing.T) {
 		parsed, err := jwt.Parse([]byte(token), jwt.WithKeySet(keySet))
 
-		assert.NoError(t, err)
+		require.NoError(t, err)
 		assert.NotNil(t, parsed)
 	})
 }
@@ -71,7 +72,7 @@ func TestHealth(t *testing.T) {
 	t.Run("the server exposes a health endpoint", func(t *testing.T) {
 		res, err := http.Get(healthPath)
 
-		assert.NoError(t, err)
+		require.NoError(t, err)
 		assert.Equal(t, http.StatusOK, res.StatusCode)
 	})
 }

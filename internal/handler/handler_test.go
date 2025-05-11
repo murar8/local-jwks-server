@@ -3,7 +3,7 @@ package handler_test
 import (
 	"bytes"
 	"encoding/json"
-	"fmt"
+	"errors"
 	"net/http"
 	"net/http/httptest"
 	"testing"
@@ -14,6 +14,7 @@ import (
 	"github.com/murar8/local-jwks-server/internal/handler"
 	"github.com/murar8/local-jwks-server/internal/token"
 	"github.com/stretchr/testify/assert"
+	"github.com/stretchr/testify/require"
 )
 
 type failingTokenService struct{}
@@ -23,11 +24,11 @@ func (f *failingTokenService) GetKey() jwk.Key {
 }
 
 func (f *failingTokenService) GetKeySet() (jwk.Set, error) {
-	return nil, fmt.Errorf("failed to build key set")
+	return nil, errors.New("failed to build key set")
 }
 
 func (f *failingTokenService) SignToken(map[string]interface{}) ([]byte, error) {
-	return nil, fmt.Errorf("failed to sign token")
+	return nil, errors.New("failed to sign token")
 }
 
 func makeTokenService() token.Service {
@@ -71,8 +72,8 @@ func TestHandleJWKS(t *testing.T) {
 		err := json.NewDecoder(res.Body).Decode(&data)
 		res.Body.Close()
 
-		assert.NoError(t, err)
-		assert.Equal(t, res.StatusCode, http.StatusOK)
+		require.NoError(t, err)
+		assert.Equal(t, http.StatusOK, res.StatusCode)
 		assert.Equal(t, "sig", data["keys"][0]["use"])
 		assert.Equal(t, "RSA", data["keys"][0]["kty"])
 		assert.Equal(t, "RS256", data["keys"][0]["alg"])
@@ -88,7 +89,7 @@ func TestHandleJWKS(t *testing.T) {
 		err := json.NewDecoder(res.Body).Decode(&data)
 		res.Body.Close()
 
-		assert.NoError(t, err)
+		require.NoError(t, err)
 		assert.Equal(t, http.StatusInternalServerError, res.StatusCode)
 		assert.EqualValues(t, http.StatusInternalServerError, data["statusCode"])
 		assert.Equal(t, "failed to build key set", data["error"])
@@ -109,7 +110,7 @@ func TestHandleSign(t *testing.T) {
 		err := json.NewDecoder(res.Body).Decode(&data)
 		res.Body.Close()
 
-		assert.NoError(t, err)
+		require.NoError(t, err)
 		assert.Equal(t, http.StatusCreated, res.StatusCode)
 
 		key := ts.GetKey()
@@ -121,7 +122,7 @@ func TestHandleSign(t *testing.T) {
 
 		parsed, err := jwt.Parse([]byte(encoded), jwt.WithKey(key.Algorithm(), raw))
 
-		assert.NoError(t, err)
+		require.NoError(t, err)
 		assert.Equal(t, "john_doe", parsed.Subject())
 		assert.Equal(t, "value", parsed.PrivateClaims()["custom"])
 	})
@@ -146,7 +147,7 @@ func TestHandleSign(t *testing.T) {
 		err := json.NewDecoder(res.Body).Decode(&data)
 		res.Body.Close()
 
-		assert.NoError(t, err)
+		require.NoError(t, err)
 		assert.Equal(t, http.StatusUnprocessableEntity, res.StatusCode)
 		assert.EqualValues(t, http.StatusUnprocessableEntity, data["statusCode"])
 		assert.NotNil(t, data["error"])

@@ -13,11 +13,11 @@ import (
 
 var (
 	// ErrInvalidPEM is returned when the PEM file is invalid.
-	ErrInvalidPEM = fmt.Errorf("invalid PEM")
+	ErrInvalidPEM = errors.New("invalid PEM")
 
 	// ErrWrongKeyType is returned when the key type does not match the
 	// configured algorithm.
-	ErrWrongKeyType = fmt.Errorf("wrong key type")
+	ErrWrongKeyType = errors.New("wrong key type")
 
 	// ErrUnsupportedParseAlgorithm is returned when the algorithm is not
 	// supported for key parsing.
