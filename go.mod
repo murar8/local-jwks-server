@@ -1,6 +1,6 @@
 module github.com/murar8/local-jwks-server
 
-go 1.24.2
+go 1.24.3
 
 require (
 	github.com/caarlos0/env/v9 v9.0.0
