@@ -16,6 +16,7 @@ import (
 	"github.com/murar8/local-jwks-server/internal/config"
 	"github.com/murar8/local-jwks-server/internal/token"
 	"github.com/stretchr/testify/assert"
+	"github.com/stretchr/testify/require"
 )
 
 func TestFromRawKey(t *testing.T) {
@@ -27,7 +28,7 @@ func TestFromRawKey(t *testing.T) {
 		key, _ := rsa.GenerateKey(rand.Reader, 2048)
 		ts, err := token.FromRawKey(key, &config.JWK{Alg: "RS256"})
 
-		assert.NoError(t, err)
+		require.NoError(t, err)
 		assert.NotNil(t, ts)
 	})
 
@@ -69,7 +70,7 @@ func TestGetKeySet(t *testing.T) {
 		ts, _ := token.FromRawKey(raw, cfg)
 		set, err := ts.GetKeySet()
 
-		assert.NoError(t, err)
+		require.NoError(t, err)
 		assert.Equal(t, 1, set.Len())
 
 		key, _ := set.Key(0)
@@ -104,7 +105,7 @@ func TestSignToken(t *testing.T) {
 		token, err := ts.SignToken(payload)
 		decoded, _ := jwt.Parse(token, jwt.WithKey(cfg.Alg, raw))
 
-		assert.NoError(t, err)
+		require.NoError(t, err)
 		assert.Equal(t, payload["sub"], decoded.Subject())
 		assert.Equal(t, payload["name"], decoded.PrivateClaims()["name"])
 	})
@@ -123,11 +124,11 @@ func TestSignToken(t *testing.T) {
 		}
 
 		tokenBytes, err := ts.SignToken(payload)
-		assert.NoError(t, err)
+		require.NoError(t, err)
 
 		// Parse without validation to check the token
 		token, err := jwt.Parse(tokenBytes, jwt.WithVerify(false))
-		assert.NoError(t, err)
+		require.NoError(t, err)
 
 		// Audience should be accessible as an array via the API
 		aud := token.Audience()
@@ -144,12 +145,12 @@ func TestSignToken(t *testing.T) {
 		// Decode the payload (second part)
 		payload64 := parts[1]
 		payloadJSON, err := base64.RawURLEncoding.DecodeString(payload64)
-		assert.NoError(t, err)
+		require.NoError(t, err)
 
 		// Parse the payload to a map
 		var payloadMap map[string]interface{}
 		err = json.Unmarshal(payloadJSON, &payloadMap)
-		assert.NoError(t, err)
+		require.NoError(t, err)
 
 		// Check if "aud" exists and is a string, not an array
 		audValue, ok := payloadMap["aud"]

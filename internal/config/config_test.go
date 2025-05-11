@@ -9,13 +9,14 @@ import (
 	"github.com/lestrrat-go/jwx/v2/jwk"
 	"github.com/murar8/local-jwks-server/internal/config"
 	"github.com/stretchr/testify/assert"
+	"github.com/stretchr/testify/require"
 )
 
 //nolint:paralleltest // Test is not parallelizable due to the use of environment variables.
 func TestNew(t *testing.T) {
 	t.Run("creates a new config using default values", func(t *testing.T) {
 		cfg, err := config.New()
-		assert.NoError(t, err)
+		require.NoError(t, err)
 		assert.Equal(t, net.IPv4(0, 0, 0, 0), cfg.Server.Addr)
 		assert.Equal(t, 8080, cfg.Server.Port)
 		assert.Equal(t, 30*time.Second, cfg.Server.HTTPReqTimeout)
@@ -37,7 +38,7 @@ func TestNew(t *testing.T) {
 		t.Setenv("JWK_FLATTEN_AUDIENCE", "true")
 
 		cfg, err := config.New()
-		assert.NoError(t, err)
+		require.NoError(t, err)
 		assert.Equal(t, net.IPv4(127, 0, 0, 1), cfg.Server.Addr)
 		assert.Equal(t, 3547, cfg.Server.Port)
 		assert.Equal(t, 60*time.Second, cfg.Server.HTTPReqTimeout)

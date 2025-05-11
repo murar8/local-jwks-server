@@ -10,6 +10,7 @@ import (
 	"github.com/lestrrat-go/jwx/v2/jwa"
 	"github.com/murar8/local-jwks-server/internal/token"
 	"github.com/stretchr/testify/assert"
+	"github.com/stretchr/testify/require"
 )
 
 const rsa512TestKey = `
@@ -64,13 +65,11 @@ func TestParseKey(t *testing.T) {
 	}
 
 	for _, alg := range rsas {
-		alg := alg
-
 		t.Run(fmt.Sprintf("parses a %s key", alg), func(t *testing.T) {
 			t.Parallel()
 
 			key, err := token.ParsePrivateKey([]byte(rsa512TestKey), alg)
-			assert.NoError(t, err)
+			require.NoError(t, err)
 			assert.IsType(t, &rsa.PrivateKey{}, key)
 		})
 	}
@@ -94,7 +93,7 @@ func TestParseKey(t *testing.T) {
 			t.Parallel()
 
 			key, err := token.ParsePrivateKey([]byte(raw), alg)
-			assert.NoError(t, err)
+			require.NoError(t, err)
 			assert.IsType(t, &ecdsa.PrivateKey{}, key)
 			assert.Equal(t, curve, key.(*ecdsa.PrivateKey).Curve)
 		})
@@ -105,7 +104,7 @@ func TestParseKey(t *testing.T) {
 
 		key, err := token.ParsePrivateKey([]byte(rsa512TestKey), jwa.HS256)
 		assert.Nil(t, key)
-		assert.ErrorIs(t, err, token.ErrUnsupportedParseAlgorithm)
+		require.ErrorIs(t, err, token.ErrUnsupportedParseAlgorithm)
 		assert.EqualError(t, err, "unsupported algorithm for key parsing: HS256")
 	})
 
@@ -114,7 +113,7 @@ func TestParseKey(t *testing.T) {
 
 		key, err := token.ParsePrivateKey([]byte("invalid"), jwa.RS256)
 		assert.Nil(t, key)
-		assert.ErrorIs(t, err, token.ErrInvalidPEM)
+		require.ErrorIs(t, err, token.ErrInvalidPEM)
 		assert.EqualError(t, err, "invalid PEM")
 	})
 
@@ -123,7 +122,7 @@ func TestParseKey(t *testing.T) {
 
 		key, err := token.ParsePrivateKey([]byte(ec256TestKey), jwa.RS256)
 		assert.Nil(t, key)
-		assert.ErrorIs(t, err, token.ErrWrongKeyType)
+		require.ErrorIs(t, err, token.ErrWrongKeyType)
 		assert.EqualError(t, err, "wrong key type: expected RSA private key")
 	})
 
@@ -132,7 +131,7 @@ func TestParseKey(t *testing.T) {
 
 		key, err := token.ParsePrivateKey([]byte(rsa512TestKey), jwa.ES256)
 		assert.Nil(t, key)
-		assert.ErrorIs(t, err, token.ErrWrongKeyType)
+		require.ErrorIs(t, err, token.ErrWrongKeyType)
 		assert.EqualError(t, err, "wrong key type: expected ECDSA private key")
 	})
 
@@ -141,7 +140,7 @@ func TestParseKey(t *testing.T) {
 
 		key, err := token.ParsePrivateKey([]byte(ec256TestKey), jwa.ES384)
 		assert.Nil(t, key)
-		assert.ErrorIs(t, err, token.ErrWrongKeyType)
+		require.ErrorIs(t, err, token.ErrWrongKeyType)
 		assert.EqualError(t, err, "wrong key type: expected ES384 curve")
 	})
 }
