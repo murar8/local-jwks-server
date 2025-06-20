@@ -4,7 +4,7 @@ go 1.24.3
 
 require (
 	github.com/caarlos0/env/v9 v9.0.0
-	github.com/go-chi/chi/v5 v5.2.1
+	github.com/go-chi/chi/v5 v5.2.2
 	github.com/go-chi/render v1.0.3
 	github.com/lestrrat-go/jwx/v2 v2.1.6
 	github.com/stretchr/testify v1.10.0
